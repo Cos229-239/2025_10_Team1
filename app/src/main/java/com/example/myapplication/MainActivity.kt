@@ -1,8 +1,6 @@
 package com.example.myapplication
 
-import android.content.Context
 import android.os.Bundle
-import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,19 +18,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 // --- Data Classes ---
-data class Task(val title: String, val time: String, val color: Color, val isCompleted: Boolean)
+data class PlannerTask(
+    val id: Long = System.currentTimeMillis(), // Unique ID for each task
+    val title: String,
+    val time: String,
+    val color: Color,
+    var isCompleted: Boolean // Make isCompleted a var
+)
+
 data class BottomNavItem(val label: String, val iconResId: Int)
 
 
@@ -43,79 +47,136 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-
                 PlannerScreen(modifier = Modifier.fillMaxSize())
             }
         }
     }
 }
 
-
-
-
 @Composable
 fun PlannerScreen(modifier: Modifier = Modifier) {
-    val tasks = listOf(
-        Task("Finish Report", "9:00 AM", Color(0xFFB2EBF2), false),
-        Task("Go to the Gym", "11:00 AM", Color(0xFFFFF9C4), false),
-        Task("Read Book", "1:00 PM", Color(0xFFE1BEE7), false),
-        Task("Project Meeting", "3:00 PM", Color(0xFFFFDAB9), false)
-    )
+    val tasks = remember {
+        mutableStateListOf(
+            PlannerTask(title = "Meeting with Team", time = "10:00 AM", color = Color(0xFFB2EBF2), isCompleted = false),
+            PlannerTask(title = "Lunch with John", time = "12:00 PM", color = Color(0xFFFFF9C4), isCompleted = false),
+            PlannerTask(title = "Submit Project Report", time = "3:00 PM", color = Color(0xFFC8E6C9), isCompleted = false),
+            PlannerTask(title = "Gym Session", time = "5:00 PM", color = Color(0xFFFFCCBC), isCompleted = true)
+        )
+    }
 
-    var selectedDay by remember { mutableStateOf("Tue") }
-    var userName by remember { mutableStateOf("Name") }
-    val context = LocalContext.current
+    // --- 1. State to control the dialog's visibility ---
+    var showAddTaskDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        userName = getUserDisplayName(context)
+    // --- 2. Show the dialog when the state is true ---
+    if (showAddTaskDialog) {
+        AddTaskDialog(
+            onDismiss = { showAddTaskDialog = false },
+            onTaskAdd = { taskTitle ->
+                val currentTime = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
+                tasks.add(
+                    PlannerTask(
+                        title = taskTitle,
+                        time = currentTime,
+                        color = Color(0xFFE1BEE7), // You can randomize this color later
+                        isCompleted = false
+                    )
+                )
+                showAddTaskDialog = false // Close the dialog after adding
+            }
+        )
     }
 
     Scaffold(
         bottomBar = { AppBottomNavigationBar() },
         modifier = modifier
     ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues())
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
 
-        Box(modifier = Modifier.padding(innerPadding)) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                TopHeader()
-                WelcomeMessage(name = userName)
-                DaySelector(
-                    selectedDay = selectedDay,
-                    onDaySelected = { day -> selectedDay = day }
+            TopHeader()
+            WelcomeMessage(name = "User")
+
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Today's Tasks",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            tasks.forEachIndexed { index, task ->
+                TaskItem(
+                    task = task,
+                    onTaskCompletedChange = { newCompletionState ->
+                        tasks[index] = task.copy(isCompleted = newCompletionState)
+                    }
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-                tasks.forEach { task -> TaskItem(task = task) }
-                Spacer(modifier = Modifier.height(80.dp))
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
 
+            // --- 3. Update the button's action to show the dialog ---
             AddTaskButton(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
+                onAddTask = { showAddTaskDialog = true }
             )
         }
     }
 }
 
+// --- 4. NEW: Composable for the Add Task Dialog ---
+@Composable
+fun AddTaskDialog(onDismiss: () -> Unit, onTaskAdd: (String) -> Unit) {
+    var taskTitle by remember { mutableStateOf("") }
 
-
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add a New Task") },
+        text = {
+            OutlinedTextField(
+                value = taskTitle,
+                onValueChange = { taskTitle = it },
+                label = { Text("Task Title") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (taskTitle.isNotBlank()) {
+                        onTaskAdd(taskTitle)
+                    }
+                },
+                // The button is only enabled if the user has typed something
+                enabled = taskTitle.isNotBlank()
+            ) {
+                Text("Add")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
 
 @Composable
-fun TopHeader() {
+fun TopHeader(modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp, bottom = 8.dp),
+        modifier = modifier
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
-        // horizontalArrangement is removed
     ) {
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "Daily Planner",
@@ -129,9 +190,10 @@ fun TopHeader() {
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
-        // IconButton for the menu is removed
     }
 }
+
+
 
 @Composable
 fun WelcomeMessage(name: String) {
@@ -144,45 +206,10 @@ fun WelcomeMessage(name: String) {
 }
 
 @Composable
-fun DaySelector(selectedDay: String, onDaySelected: (String) -> Unit) {
-    val days = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        days.forEach { day ->
-            DayChip(
-                day = day,
-                isSelected = day == selectedDay,
-                onDayClick = { onDaySelected(day) }
-            )
-        }
-    }
-}
-
-@Composable
-fun DayChip(day: String, isSelected: Boolean, onDayClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable(onClick = onDayClick)
-            .background(if (isSelected) Color.DarkGray else Color.Transparent)
-            .padding(vertical = 8.dp, horizontal = 12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = day,
-            color = if (isSelected) Color.White else Color.Gray,
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp
-        )
-    }
-}
-
-@Composable
-fun TaskItem(task: Task) {
-    var isChecked by remember { mutableStateOf(task.isCompleted) }
+fun TaskItem(
+    task: PlannerTask,
+    onTaskCompletedChange: (Boolean) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,13 +222,10 @@ fun TaskItem(task: Task) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
         Switch(
-            checked = isChecked,
-            onCheckedChange = { isChecked = it }
+            checked = task.isCompleted,
+            onCheckedChange = onTaskCompletedChange
         )
-
-
         Column(
             horizontalAlignment = Alignment.End
         ) {
@@ -220,11 +244,15 @@ fun TaskItem(task: Task) {
 }
 
 @Composable
-fun AddTaskButton(modifier: Modifier = Modifier) {
+fun AddTaskButton(
+    modifier: Modifier = Modifier,
+    onAddTask: () -> Unit
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .background(Color(0xFFE0F7E0), shape = RoundedCornerShape(16.dp))
+            .clickable(onClick = onAddTask)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
@@ -238,6 +266,7 @@ fun AddTaskButton(modifier: Modifier = Modifier) {
         )
     }
 }
+
 
 @Composable
 fun AppBottomNavigationBar() {
@@ -271,26 +300,6 @@ fun AppBottomNavigationBar() {
             )
         }
     }
-}
-
-private fun getUserDisplayName(context: Context): String {
-    try {
-        val cursor = context.contentResolver.query(
-            ContactsContract.Profile.CONTENT_URI,
-            arrayOf(ContactsContract.Profile.DISPLAY_NAME_PRIMARY),
-            null, null, null
-        )
-        if (cursor != null && cursor.moveToFirst()) {
-            val name = cursor.getString(0)
-            cursor.close()
-            if (!name.isNullOrBlank()) {
-                return name.split(" ")[0]
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return "User"
 }
 
 @Preview(showBackground = true)
