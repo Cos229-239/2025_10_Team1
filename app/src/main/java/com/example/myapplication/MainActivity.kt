@@ -91,7 +91,7 @@ fun SignInScreen() {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            placeholder = { Text("email@domain.com") },
+            placeholder = { Text("Login") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
