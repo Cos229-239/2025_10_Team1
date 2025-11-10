@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+
 
 // --- BREATHING EXERCISE SCREEN ---
 

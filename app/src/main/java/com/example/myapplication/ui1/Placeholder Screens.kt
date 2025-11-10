@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.AppHeader
+import com.example.myapplication.ui1.AppHeader
+
 
 // --- EDIT PROFILE SCREEN ---
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,17 +50,7 @@ fun EditProfileScreen(navController: NavController) {
 
 
 // --- Placeholder Screens ---
-@Composable
-fun HomeScreen(navController: NavController) {
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(horizontal = 16.dp)) {
-        AppHeader(title = "Home", navController = navController)
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Home Screen")
-        }
-    }
-}
+
 
 @Composable
 fun LogScreen(navController: NavController) {

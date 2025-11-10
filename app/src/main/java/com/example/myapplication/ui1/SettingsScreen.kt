@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
 import com.example.myapplication.Screen
+import com.example.myapplication.ui1.AppHeader
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

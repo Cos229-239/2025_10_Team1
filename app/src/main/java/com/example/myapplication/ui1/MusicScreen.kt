@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import android.media.MediaPlayer
 import android.net.Uri
@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
+import com.example.myapplication.ui1.AppHeader
+
 
 // --- UPDATED: MUSIC SCREEN ---
 @OptIn(ExperimentalMaterial3Api::class)

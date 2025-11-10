@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.Stretch
+import com.example.myapplication.ui1.AppHeader
+
 
 // --- STRETCH DETAIL SCREEN ---
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -47,11 +47,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.AppHeader
 import com.example.myapplication.ChartSegment
 import com.example.myapplication.PlannerTask
 import com.example.myapplication.R
 import com.example.myapplication.Tip
+
 
 // --- INSIGHTS SCREEN ---
 @Composable

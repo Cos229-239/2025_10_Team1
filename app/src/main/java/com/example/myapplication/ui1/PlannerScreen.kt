@@ -1,6 +1,5 @@
-package com.example.myapplication.ui
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
+package com.example.myapplication.ui1
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -22,19 +23,36 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.myapplication.AppHeader // Corrected import
+import com.example.myapplication.ui1.AppHeader
 import com.example.myapplication.PlannerTask
-import com.example.myapplication.TaskPriority // Added missing import
+import com.example.myapplication.TaskPriority
 
 // --- PLANNER SCREEN ---
 @Composable
 fun PlannerScreen(
-    tasks: List<PlannerTask>,
-    onTaskCompletedChange: (PlannerTask, Boolean) -> Unit,
-    onAddTask: (String, TaskPriority) -> Unit,
-    navController: NavController
+    navController: NavController,
+    initialTasks: List<PlannerTask>
 ) {
+    val tasks = remember { mutableStateListOf(*initialTasks.toTypedArray()) }
     var showDialog by remember { mutableStateOf(false) }
+
+    fun onAddTask(title: String, priority: TaskPriority) {
+        tasks.add(
+            PlannerTask(
+                title = title,
+                time = "10:00 AM", // Placeholder time
+                priority = priority,
+                isCompleted = false
+            )
+        )
+    }
+
+    fun onTaskCompletedChange(task: PlannerTask, isCompleted: Boolean) {
+        val index = tasks.indexOf(task)
+        if (index != -1) {
+            tasks[index] = task.copy(isCompleted = isCompleted)
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -60,14 +78,22 @@ fun PlannerScreen(
                     Text("No tasks for today!")
                 }
             } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.weight(1f) // Apply weight to fill available space
+                ) {
                     items(tasks, key = { it.id }) { task ->
-                        TaskItem(task = task, onCompletedChange = { onTaskCompletedChange(task, it) })
+                        TaskItem(
+                            task = task,
+                            onCompletedChange = { isCompleted ->
+                                onTaskCompletedChange(task, isCompleted)
+                            }
+                        )
                     }
                 }
             }
-        }
-    }
+        } // This correctly closes the Column
+    } // This correctly closes the Scaffold content
 
     if (showDialog) {
         AddTaskDialog(
@@ -78,10 +104,9 @@ fun PlannerScreen(
             }
         )
     }
-}
+} // <-- This is the ONLY brace that should close the PlannerScreen function.
 
-
-// --- PLANNER SCREEN COMPOSABLES ---
+// --- All helper composables are now top-level functions in the file ---
 
 @Composable
 fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit) {
@@ -135,7 +160,6 @@ fun PriorityIndicator(priority: TaskPriority) {
     )
 }
 
-
 @Composable
 fun AddTaskDialog(
     onDismiss: () -> Unit,
@@ -164,8 +188,6 @@ fun AddTaskDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Priority Dropdown
                 Box {
                     OutlinedTextField(
                         value = priority.name,
@@ -187,7 +209,8 @@ fun AddTaskDialog(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        TaskPriority.values().forEach { p ->
+                        // FIX: Use .entries which is the recommended replacement for .values()
+                        TaskPriority.entries.forEach { p ->
                             DropdownMenuItem(
                                 text = { Text(p.name) },
                                 onClick = {
@@ -198,7 +221,6 @@ fun AddTaskDialog(
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),

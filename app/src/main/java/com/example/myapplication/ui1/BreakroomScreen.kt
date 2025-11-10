@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -26,8 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.myapplication.AppHeader // Corrected import
-import com.example.myapplication.Screen // Corrected import
+import com.example.myapplication.ui1.AppHeader
+
+import com.example.myapplication.Screen
 import kotlinx.coroutines.delay
 
 // --- BREAKROOM SCREEN ---
@@ -157,7 +158,8 @@ fun BreakActivities(navController: NavController) {
                 color = Color(0xFFFFF9C4),
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { navController.navigate(Screen.Breathing.route) }
+                        .clickable { navController.navigate(Screen.BreathingExercise.route) }
+
             )
             ActivityButton(
                 text = "Stretch",

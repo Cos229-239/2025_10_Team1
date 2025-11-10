@@ -1,4 +1,4 @@
-package com.example.myapplication.ui
+package com.example.myapplication.ui1
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,13 +38,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.Screen
 import com.example.myapplication.Stretch
-import com.example.myapplication.stretchDataMap
+import com.example.myapplication.ui1.AppHeader
+
 
 // --- STRETCH EXERCISE SCREEN ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StretchExerciseScreen(navController: NavController) {
-    val stretches = stretchDataMap.values.toList()
+fun StretchExerciseScreen(navController: NavController, stretches: List<Stretch>) {
+
+
 
     val gradient = Brush.verticalGradient(
         colors = listOf(Color(0xFFE6E6FA), Color(0xFFD8BFD8))
