@@ -9,6 +9,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessibilityNew
 import androidx.compose.material.icons.outlined.Chair
@@ -31,8 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -51,9 +54,6 @@ import com.example.myapplication.ui1.SettingsScreen
 import com.example.myapplication.ui1.StretchDetailScreen
 import com.example.myapplication.ui1.StretchExerciseScreen
 import com.example.myapplication.ui1.theme.MyApplicationTheme
-import androidx.compose.foundation.layout.size // <-- ADD THIS IMPORT if not present
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 
 // --- Data Classes & Enums ---
 
@@ -62,11 +62,11 @@ enum class TaskPriority {
 }
 
 data class PlannerTask(
-    val id: Long = System.currentTimeMillis(),
+    val id: Long,
     val title: String,
     val time: String,
     val priority: TaskPriority,
-    var isCompleted: Boolean
+    val isCompleted: Boolean
 )
 
 data class BottomNavItem(val label: String, val icon: Any, val route: String)
@@ -76,7 +76,7 @@ data class MenuItem(val title: String, val color: Color, val route: String)
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Breakroom : Screen("breakroom")
-    object BreathingExercise : Screen("breathing_exercise") // <-- FIX 1: Name and route corrected
+    object BreathingExercise : Screen("breathing_exercise")
     object Stretch : Screen("stretch")
     object Log : Screen("log")
     object Planner : Screen("planner")
@@ -92,7 +92,6 @@ sealed class Screen(val route: String) {
     }
 }
 
-
 data class ChartSegment(val reason: String, val value: Float, val color: Color)
 data class Tip(val title: String, val url: String, val imageResId: Int? = null)
 
@@ -103,9 +102,6 @@ data class Stretch(
     @DrawableRes val imageRes: Int,
     val icon: ImageVector
 )
-
-
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,45 +116,39 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modifier, tasks: List<PlannerTask>, stretchDataMap: Map<String, Stretch>, selectedMusicUri: Uri?, onMusicSelect: (Uri) -> Unit) {
+fun NavigationGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    tasks: List<PlannerTask>,
+    onAddTask: (String, TaskPriority) -> Unit,
+    onTaskCompletedChange: (PlannerTask, Boolean) -> Unit,
+    stretchDataMap: Map<String, Stretch>,
+    selectedMusicUri: Uri?,
+    onMusicSelect: (Uri) -> Unit
+) {
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
-        modifier = modifier // Apply the modifier here
+        modifier = modifier
     ) {
-        composable(Screen.Home.route) {
-            HomeScreen(navController = navController)
-        }
-        composable(Screen.Breakroom.route) {
-            BreakroomScreen(navController = navController)
-        }
-        composable(Screen.BreathingExercise.route) {
-            BreathingExerciseScreen(navController = navController)
-        }
-        composable(Screen.Stretch.route) {
-            StretchExerciseScreen(navController = navController, stretches = stretchDataMap.values.toList())
-        }
-        composable(Screen.Log.route) {
-            LogScreen(navController = navController)
-        }
+        composable(Screen.Home.route) { HomeScreen(navController = navController) }
+        composable(Screen.Breakroom.route) { BreakroomScreen(navController = navController) }
+        composable(Screen.BreathingExercise.route) { BreathingExerciseScreen(navController = navController) }
+        composable(Screen.Stretch.route) { StretchExerciseScreen(navController = navController, stretches = stretchDataMap.values.toList()) }
+        composable(Screen.Log.route) { LogScreen(navController = navController) }
         composable(Screen.Planner.route) {
-            PlannerScreen(navController = navController, initialTasks = tasks)
+            PlannerScreen(
+                navController = navController,
+                tasks = tasks,
+                onAddTask = onAddTask,
+                onTaskCompletedChange = onTaskCompletedChange
+            )
         }
-        composable(Screen.Insights.route) {
-            InsightsScreen(tasks = tasks, navController = navController)
-        }
-        composable(Screen.Account.route) {
-            AccountScreen(navController = navController)
-        }
-        composable(Screen.Settings.route) {
-            SettingsScreen(navController = navController)
-        }
-        composable(Screen.EditProfile.route) {
-            EditProfileScreen(navController = navController)
-        }
-        composable(Screen.Menu.route) {
-            MenuScreen(navController = navController)
-        }
+        composable(Screen.Insights.route) { InsightsScreen(tasks = tasks, navController = navController) }
+        composable(Screen.Account.route) { AccountScreen(navController = navController) }
+        composable(Screen.Settings.route) { SettingsScreen(navController = navController) }
+        composable(Screen.EditProfile.route) { EditProfileScreen(navController = navController) }
+        composable(Screen.Menu.route) { MenuScreen(navController = navController) }
         composable(Screen.Music.route) {
             MusicScreen(
                 navController = navController,
@@ -172,9 +162,7 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
             if (stretch != null) {
                 StretchDetailScreen(stretch = stretch, navController = navController)
             } else {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Stretch not found!")
-                }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Stretch not found!") }
             }
         }
     }
@@ -185,22 +173,28 @@ fun NavigationGraph(navController: NavHostController, modifier: Modifier = Modif
 fun MainApp() {
     val navController = rememberNavController()
     var selectedMusicUri by remember { mutableStateOf<Uri?>(null) }
+    var uniqueIdCounter by remember { mutableStateOf(4L) }
 
-    val stretchDataMap = remember {listOf(
-        Stretch("Neck Tilt", "Gently tilt your head from side to side.", "Sit or stand tall. Gently tilt your head towards your right shoulder, holding for 15-20 seconds. Feel the stretch on the left side of your neck. Return to center and repeat on the other side.", R.drawable.stretch_neck, Icons.Outlined.Person),
-        Stretch("Shoulder Rolls", "Roll your shoulders backwards, then forwards.", "Inhale and lift your shoulders up towards your ears. Exhale and roll them back and down. Repeat this motion 5 times, then reverse the direction and roll them forwards 5 times.", R.drawable.stretch_shoulders, Icons.Outlined.AccessibilityNew),
-        Stretch("Chest Opener", "Clasp hands behind you to open the chest.", "Stand and clasp your hands behind your back, interlocking your fingers. Straighten your arms and gently lift your hands upwards. You should feel a stretch across your chest and the front of your shoulders. Hold for 20 seconds.", R.drawable.stretch_chest, Icons.Outlined.SelfImprovement),
-        Stretch("Wrist Stretch", "Gently pull your fingers back.", "Extend your right arm in front of you with your palm facing up. With your left hand, gently bend your right fingers down towards the floor. Hold for 15 seconds. Switch hands and repeat.", R.drawable.stretch_wrist, Icons.Outlined.WavingHand),
-        Stretch("Spinal Twist", "While seated, gently twist your torso.", "Sit sideways in a chair, facing right. Keep your feet flat on the floor. Inhale to lengthen your spine, then exhale and twist your torso to the right, using the chair back for leverage. Hold for 20 seconds, then switch sides.", R.drawable.stretch_spine, Icons.Outlined.Chair)
-    ).associateBy { it.name }
+
+
+
+
+val stretchDataMap = remember {
+        listOf(
+            Stretch("Neck Tilt", "Gently tilt your head from side to side.", "Sit or stand tall. Gently tilt your head towards your right shoulder, holding for 15-20 seconds. Feel the stretch on the left side of your neck. Return to center and repeat on the other side.", R.drawable.stretch_neck, Icons.Outlined.Person),
+            Stretch("Shoulder Rolls", "Roll your shoulders backwards, then forwards.", "Inhale and lift your shoulders up towards your ears. Exhale and roll them back and down. Repeat this motion 5 times, then reverse the direction and roll them forwards 5 times.", R.drawable.stretch_shoulders, Icons.Outlined.AccessibilityNew),
+            Stretch("Chest Opener", "Clasp hands behind you to open the chest.", "Stand and clasp your hands behind your back, interlocking your fingers. Straighten your arms and gently lift your hands upwards. You should feel a stretch across your chest and the front of your shoulders. Hold for 20 seconds.", R.drawable.stretch_chest, Icons.Outlined.SelfImprovement),
+            Stretch("Wrist Stretch", "Gently pull your fingers back.", "Extend your right arm in front of you with your palm facing up. With your left hand, gently bend your right fingers down towards the floor. Hold for 15 seconds. Switch hands and repeat.", R.drawable.stretch_wrist, Icons.Outlined.WavingHand),
+            Stretch("Spinal Twist", "While seated, gently twist your torso.", "Sit sideways in a chair, facing right. Keep your feet flat on the floor. Inhale to lengthen your spine, then exhale and twist your torso to the right, using the chair back for leverage. Hold for 20 seconds, then switch sides.", R.drawable.stretch_spine, Icons.Outlined.Chair)
+        ).associateBy { it.name }
     }
 
     val tasks = remember {
         mutableStateListOf(
-            PlannerTask(title = "Submit Project Report", time = "3:00 PM", priority = TaskPriority.HIGH, isCompleted = false),
-            PlannerTask(title = "Meeting with Team", time = "10:00 AM", priority = TaskPriority.MEDIUM, isCompleted = false),
-            PlannerTask(title = "Lunch with John", time = "12:00 PM", priority = TaskPriority.LOW, isCompleted = false),
-            PlannerTask(title = "Gym Session", time = "5:00 PM", priority = TaskPriority.LOW, isCompleted = true)
+            PlannerTask(id = 0L, title = "Finish Report", time = "9:00 AM", priority = TaskPriority.HIGH, isCompleted = false),
+            PlannerTask(id = 1L, title = "Go to the Gym", time = "11:00 AM", priority = TaskPriority.MEDIUM, isCompleted = false),
+            PlannerTask(id = 2L, title = "Read Book", time = "1:00 PM", priority = TaskPriority.LOW, isCompleted = false),
+            PlannerTask(id = 3L, title = "Project Meeting", time = "3:00 PM", priority = TaskPriority.HIGH, isCompleted = true)
         )
     }
 
@@ -208,23 +202,36 @@ fun MainApp() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
-        bottomBar = {
-            AppBottomNavigationBar(navController = navController, currentRoute = currentRoute)
-        }
-    ) { innerPadding -> // This 'innerPadding' is the key
+        bottomBar = { AppBottomNavigationBar(navController = navController, currentRoute = currentRoute) }
+    ) { innerPadding ->
         NavigationGraph(
             navController = navController,
-            modifier = Modifier.padding(innerPadding), // Pass the padding here
+            modifier = Modifier.padding(innerPadding),
             tasks = tasks,
+            onAddTask = { title, priority ->
+                tasks.add(
+                    PlannerTask(
+                        id = uniqueIdCounter++,
+                        title = title,
+                        time = "10:00 AM",
+                        priority = priority,
+                        isCompleted = false
+                    )
+                )
+            },
+
+            onTaskCompletedChange = { task, isCompleted ->
+                val index = tasks.indexOf(task)
+                if (index != -1) {
+                    tasks[index] = task.copy(isCompleted = isCompleted)
+                }
+            },
             stretchDataMap = stretchDataMap,
             selectedMusicUri = selectedMusicUri,
             onMusicSelect = { uri -> selectedMusicUri = uri }
         )
     }
 }
-
-
-
 
 @Composable
 fun AppBottomNavigationBar(navController: NavController, currentRoute: String?) {
@@ -240,39 +247,23 @@ fun AppBottomNavigationBar(navController: NavController, currentRoute: String?) 
         items.forEach { item ->
             NavigationBarItem(
                 icon = {
-                    val iconModifier = Modifier.size(28.dp) // <-- DEFINE A MODIFIER FOR THE ICON SIZE
+                    val iconModifier = Modifier.size(28.dp)
                     when (val icon = item.icon) {
-                        // APPLY THE MODIFIER TO BOTH ICON TYPES
-                        is Int -> Icon(
-                            painter = painterResource(id = icon),
-                            contentDescription = item.label,
-                            modifier = iconModifier
-                        )
-                        is ImageVector -> Icon(
-                            imageVector = icon,
-                            contentDescription = item.label,
-                            modifier = iconModifier
-                        )
+                        is Int -> Icon(painter = painterResource(id = icon), contentDescription = item.label, modifier = iconModifier)
+                        is ImageVector -> Icon(imageVector = icon, contentDescription = item.label, modifier = iconModifier)
                     }
                 },
-                label = {
-                    Text(
-                        text = item.label,
-                        fontSize = 12.sp,
-                        softWrap = false
-                    )
-                },
+                label = { Text(text = item.label, fontSize = 12.sp, softWrap = false) },
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
                 }
             )
         }
     }
 }
-
-

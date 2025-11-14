@@ -2,77 +2,95 @@ package com.example.myapplication.ui1
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.myapplication.ui1.AppHeader
 import com.example.myapplication.PlannerTask
+import com.example.myapplication.R
 import com.example.myapplication.TaskPriority
+import com.example.myapplication.ui.theme.LightBlue
+import com.example.myapplication.ui.theme.LightGreen
+import com.example.myapplication.ui.theme.LightOrange
+import com.example.myapplication.ui.theme.LightPurple
+import com.example.myapplication.ui.theme.LightYellow
 
 // --- PLANNER SCREEN ---
 @Composable
 fun PlannerScreen(
     navController: NavController,
-    initialTasks: List<PlannerTask>
+    tasks: List<PlannerTask>,
+    onAddTask: (String, TaskPriority) -> Unit,
+    onTaskCompletedChange: (PlannerTask, Boolean) -> Unit
 ) {
-    val tasks = remember { mutableStateListOf(*initialTasks.toTypedArray()) }
     var showDialog by remember { mutableStateOf(false) }
-
-    fun onAddTask(title: String, priority: TaskPriority) {
-        tasks.add(
-            PlannerTask(
-                title = title,
-                time = "10:00 AM", // Placeholder time
-                priority = priority,
-                isCompleted = false
-            )
-        )
-    }
-
-    fun onTaskCompletedChange(task: PlannerTask, isCompleted: Boolean) {
-        val index = tasks.indexOf(task)
-        if (index != -1) {
-            tasks[index] = task.copy(isCompleted = isCompleted)
-        }
-    }
+    var selectedDay by remember { mutableStateOf("Tue") }
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Task")
-            }
-        },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.White
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(innerPadding)
+                .fillMaxSize()
                 .padding(horizontal = 24.dp)
         ) {
-            AppHeader(title = "Planner", navController = navController)
-            Spacer(modifier = Modifier.height(16.dp))
+            PlannerHeader()
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "What are we doing today, Name?",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Normal
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            DaySelector(selectedDay = selectedDay, onDaySelected = { selectedDay = it })
+            Spacer(modifier = Modifier.height(24.dp))
+
             if (tasks.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("No tasks for today!")
@@ -80,20 +98,24 @@ fun PlannerScreen(
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.weight(1f) // Apply weight to fill available space
+                    modifier = Modifier.weight(1f)
                 ) {
-                    items(tasks, key = { it.id }) { task ->
+                    itemsIndexed(tasks, key = { _, task -> task.id }) { index, task ->
                         TaskItem(
                             task = task,
                             onCompletedChange = { isCompleted ->
                                 onTaskCompletedChange(task, isCompleted)
-                            }
+                            },
+                            color = taskColors[index % taskColors.size]
                         )
                     }
                 }
             }
-        } // This correctly closes the Column
-    } // This correctly closes the Scaffold content
+            Spacer(modifier = Modifier.height(16.dp))
+            AddTaskButton(onClick = { showDialog = true })
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
 
     if (showDialog) {
         AddTaskDialog(
@@ -104,60 +126,115 @@ fun PlannerScreen(
             }
         )
     }
-} // <-- This is the ONLY brace that should close the PlannerScreen function.
+}
 
-// --- All helper composables are now top-level functions in the file ---
 
 @Composable
-fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit) {
+fun PlannerHeader() {
     Row(
-        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(top = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Checkbox(
-            checked = task.isCompleted,
-            onCheckedChange = onCompletedChange,
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary,
-                uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = task.title,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
-                ),
-                color = if (task.isCompleted) Color.Gray else MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = task.time,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (task.isCompleted) Color.Gray else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Daily Planner", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.tisense_icon_2), // Replace with your logo
+                contentDescription = "Logo",
+                modifier = Modifier.size(92.dp),
+                tint = Color.Unspecified
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
-        PriorityIndicator(priority = task.priority)
+        IconButton(onClick = { /* Handle menu click */ }) {
+            Icon(Icons.Default.Menu, contentDescription = "Menu")
+        }
     }
 }
 
 @Composable
-fun PriorityIndicator(priority: TaskPriority) {
-    Box(
-        modifier = Modifier
-            .size(12.dp)
-            .background(
-                color = when (priority) {
-                    TaskPriority.HIGH -> Color.Red
-                    TaskPriority.MEDIUM -> Color(0xFFFFA500) // Orange
-                    TaskPriority.LOW -> Color.Blue
-                },
-                shape = CircleShape
+fun DaySelector(selectedDay: String, onDaySelected: (String) -> Unit) {
+    val days = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        days.forEach { day ->
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = if (day == selectedDay) Color.Black else Color.Transparent,
+                        shape = CircleShape
+                    )
+                    .clickable { onDaySelected(day) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = day,
+                    color = if (day == selectedDay) Color.White else Color.Black,
+                    fontWeight = if (day == selectedDay) FontWeight.Bold else FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
+val taskColors = listOf(LightBlue, LightYellow, LightPurple, LightOrange)
+
+@Composable
+fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit, color: Color) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(containerColor = color)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 20.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = task.time,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Switch(
+                checked = task.isCompleted,
+                onCheckedChange = onCompletedChange
             )
-    )
+        }
+    }
+}
+
+@Composable
+fun AddTaskButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = LightGreen)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Add, contentDescription = "Add Task", tint = Color.Black)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Add Task", color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+    }
 }
 
 @Composable
@@ -167,7 +244,6 @@ fun AddTaskDialog(
 ) {
     var title by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(TaskPriority.MEDIUM) }
-    var expanded by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -179,49 +255,15 @@ fun AddTaskDialog(
                     .padding(24.dp)
                     .fillMaxWidth()
             ) {
-                Text("Add New Task", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
+                Text("Add New Task", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(20.dp))
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("Task Title") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Box {
-                    OutlinedTextField(
-                        value = priority.name,
-                        onValueChange = {},
-                        label = { Text("Priority") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { expanded = true },
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                if (expanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
-                                "Priority dropdown",
-                                Modifier.clickable { expanded = true })
-                        }
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // FIX: Use .entries which is the recommended replacement for .values()
-                        TaskPriority.entries.forEach { p ->
-                            DropdownMenuItem(
-                                text = { Text(p.name) },
-                                onClick = {
-                                    priority = p
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -230,7 +272,10 @@ fun AddTaskDialog(
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { onConfirm(title, priority) }) {
+                    Button(
+                        onClick = { onConfirm(title, priority) },
+                        enabled = title.isNotBlank()
+                    ) {
                         Text("Add")
                     }
                 }
