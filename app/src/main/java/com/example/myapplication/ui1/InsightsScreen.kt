@@ -79,6 +79,8 @@ fun InsightsScreen(tasks: List<PlannerTask>, navController: NavController, modif
             .padding(WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues())
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
+
+
     ) {
         AppHeader(title = "Insights", navController = navController)
         Spacer(modifier = Modifier.height(32.dp))

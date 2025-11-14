@@ -138,11 +138,11 @@ fun HomeHeader(onMenuClick: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Home", fontSize = 34.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.width(8.dp))
-                // Replace with your actual logo if available
+
                 Image(
                     painter = painterResource(id = R.drawable.tisense_icon_2),
                     contentDescription = "Logo",
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(92.dp)
                 )
             }
             Text(text = currentDate, fontSize = 14.sp, color = Color.Gray)
