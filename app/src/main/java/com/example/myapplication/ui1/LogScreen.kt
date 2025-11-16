@@ -1,4 +1,3 @@
-// In: app/src/main/java/com/example/myapplication/ui1/LogScreen.kt
 package com.example.myapplication.ui1
 
 
@@ -277,8 +276,3 @@ fun CardBack(log: RecentLog, recommendation: String) {
         )
     }
 }
-
-// --- THIS IS THE FIX ---
-// The old LogBottomNavigationBar and LogScreenPreview have been removed
-// as they were causing errors and are no longer needed.
-// --- END OF FIX ---

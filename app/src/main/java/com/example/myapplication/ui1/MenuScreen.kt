@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.MenuItem
 import com.example.myapplication.Screen
-import com.example.myapplication.ui1.AppHeader
 
 // --- MENU SCREEN ---
 
@@ -45,27 +44,7 @@ fun MenuScreen(navController: NavController) {
     )
 
     Scaffold(
-        topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Cancel",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { navController.popBackStack() }
-                )
-                Text(
-                    text = "Done",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { navController.popBackStack() }
-                )
-            }
-        }
+        topBar = { TisenseHeader(onMenuClick = { navController.navigate(Screen.Menu.route) }) }
     ) { innerPadding ->
         Column(
             modifier = Modifier

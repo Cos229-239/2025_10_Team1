@@ -75,7 +75,7 @@ fun HomeScreen(navController: NavController) {
 
         // --- Header ---
         Spacer(modifier = Modifier.height(16.dp))
-        HomeHeader(onMenuClick = { navController.navigate(Screen.Menu.route) })
+        TisenseHeader(onMenuClick = { navController.navigate(Screen.Menu.route) })
         Spacer(modifier = Modifier.height(32.dp))
 
         // --- Welcome Message ---
@@ -123,39 +123,6 @@ fun HomeScreen(navController: NavController) {
 
 
 // --- Sub-Components ---
-
-@Composable
-fun HomeHeader(onMenuClick: () -> Unit) {
-    val currentDate = remember {
-        SimpleDateFormat("MMMM d, yyyy", Locale.getDefault()).format(Date())
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Home", fontSize = 34.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Image(
-                    painter = painterResource(id = R.drawable.tisense_icon_2),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(92.dp)
-                )
-            }
-            Text(text = currentDate, fontSize = 14.sp, color = Color.Gray)
-        }
-        IconButton(onClick = onMenuClick) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                modifier = Modifier.size(32.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun InsightsDonutChart() {

@@ -49,6 +49,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.myapplication.PlannerTask
 import com.example.myapplication.R
+import com.example.myapplication.Screen
 import com.example.myapplication.TaskPriority
 import com.example.myapplication.ui.theme.LightBlue
 import com.example.myapplication.ui.theme.LightGreen
@@ -77,7 +78,7 @@ fun PlannerScreen(
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
         ) {
-            PlannerHeader()
+            PlannerHeader(navController = navController)
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "What are we doing today, Name?",
@@ -130,7 +131,7 @@ fun PlannerScreen(
 
 
 @Composable
-fun PlannerHeader() {
+fun PlannerHeader(navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -142,13 +143,13 @@ fun PlannerHeader() {
             Text("Daily Planner", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
-                painter = painterResource(id = R.drawable.tisense_icon_2), // Replace with your logo
+                painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = "Logo",
-                modifier = Modifier.size(92.dp),
+                modifier = Modifier.size(32.dp),
                 tint = Color.Unspecified
             )
         }
-        IconButton(onClick = { /* Handle menu click */ }) {
+        IconButton(onClick = { navController.navigate(Screen.Menu.route) }) {
             Icon(Icons.Default.Menu, contentDescription = "Menu")
         }
     }

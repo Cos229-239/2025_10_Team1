@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.Stretch
-import com.example.myapplication.ui1.AppHeader
 
 
 // --- STRETCH DETAIL SCREEN ---
@@ -47,19 +46,7 @@ fun StretchDetailScreen(stretch: Stretch, navController: NavController) {
     )
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stretch.name, fontWeight = FontWeight.Bold, color = Color.Black) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "Back", tint = Color.Black)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
-            )
-        },
+        topBar = { TisenseTopAppBar() },
         containerColor = Color.Transparent,
         modifier = Modifier.background(gradient)
     ) { innerPadding ->

@@ -26,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.myapplication.ui1.AppHeader
 
 import com.example.myapplication.Screen
 import kotlinx.coroutines.delay
@@ -53,33 +52,36 @@ fun BreakroomScreen(navController: NavController, modifier: Modifier = Modifier)
         colors = listOf(Color(0xFFA4EBF3), Color(0xFFD4F1F4))
     )
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(gradient)
-            .padding(WindowInsets.systemBars.asPaddingValues())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        topBar = { TisenseHeader(onMenuClick = { navController.navigate(Screen.Menu.route) }) }
     ) {
-        AppHeader(title = "Breakroom", navController = navController)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Let's take a break, Name.",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier.align(Alignment.Start)
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        BreakTimer(
-            remainingTimeSeconds = remainingTimeSeconds,
-            isRunning = isRunning,
-            onToggle = { isRunning = !isRunning }
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        BreathingGuide()
-        Spacer(modifier = Modifier.weight(1f))
-        BreakActivities(navController = navController)
-        Spacer(modifier = Modifier.height(32.dp))
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(gradient)
+                .padding(it)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Let's take a break, Name.",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            BreakTimer(
+                remainingTimeSeconds = remainingTimeSeconds,
+                isRunning = isRunning,
+                onToggle = { isRunning = !isRunning }
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            BreathingGuide()
+            Spacer(modifier = Modifier.weight(1f))
+            BreakActivities(navController = navController)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 

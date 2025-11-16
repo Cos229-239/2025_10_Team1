@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.Screen
 import com.example.myapplication.Stretch
-import com.example.myapplication.ui1.AppHeader
 
 
 // --- STRETCH EXERCISE SCREEN ---
@@ -53,19 +52,7 @@ fun StretchExerciseScreen(navController: NavController, stretches: List<Stretch>
     )
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Guided Stretches", fontWeight = FontWeight.Bold, color = Color.Black) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "Back", tint = Color.Black)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
-            )
-        },
+        topBar = { TisenseTopAppBar() },
         containerColor = Color.Transparent,
         modifier = Modifier.background(gradient)
     ) { innerPadding ->

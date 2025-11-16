@@ -62,9 +62,15 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // ⬆️ Fix #2 — Update Compose + Activity versions
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.compose.ui:ui:1.7.5")
-    implementation("androidx.compose.material3:material3:1.3.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.7.5")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.7.5")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.compose.ui:ui:1.6.8")
+    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.8")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.8")
+
+    // ⬆️ Fix #3 — Add Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // ⬆️ Fix #4 — Add Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
 }

@@ -11,11 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccessibilityNew
-import androidx.compose.material.icons.outlined.Chair
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.SelfImprovement
-import androidx.compose.material.icons.outlined.WavingHand
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -135,12 +131,7 @@ fun NavigationGraph(
         composable(Screen.Breakroom.route) { BreakroomScreen(navController = navController) }
         composable(Screen.BreathingExercise.route) { BreathingExerciseScreen(navController = navController) }
         composable(Screen.Stretch.route) { StretchExerciseScreen(navController = navController, stretches = stretchDataMap.values.toList()) }
-
-        // --- THIS IS THE FIX ---
-        // The LogScreen only needs a userName, not a NavController.
         composable(Screen.Log.route) { LogScreen(userName = "Jonathan") }
-        // --- END OF FIX ---
-
         composable(Screen.Planner.route) {
             PlannerScreen(
                 navController = navController,
@@ -180,7 +171,11 @@ fun MainApp() {
     var selectedMusicUri by remember { mutableStateOf<Uri?>(null) }
     var uniqueIdCounter by remember { mutableStateOf(4L) }
 
-    val stretchDataMap = remember {
+
+
+
+
+val stretchDataMap = remember {
         listOf(
             Stretch("Neck Tilt", "Gently tilt your head from side to side.", "Sit or stand tall. Gently tilt your head towards your right shoulder, holding for 15-20 seconds. Feel the stretch on the left side of your neck. Return to center and repeat on the other side.", R.drawable.stretch_neck, Icons.Outlined.Person),
             Stretch("Shoulder Rolls", "Roll your shoulders backwards, then forwards.", "Inhale and lift your shoulders up towards your ears. Exhale and roll them back and down. Repeat this motion 5 times, then reverse the direction and roll them forwards 5 times.", R.drawable.stretch_shoulders, Icons.Outlined.AccessibilityNew),
@@ -258,10 +253,11 @@ fun AppBottomNavigationBar(navController: NavController, currentRoute: String?) 
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
                 }
             )
         }
