@@ -91,7 +91,7 @@ fun SignInScreen() {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            placeholder = { Text("Login") },
+            label = { Text("Login") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -102,6 +102,7 @@ fun SignInScreen() {
                 focusedBorderColor = Color.Black
             )
         )
+
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -156,7 +157,7 @@ fun SignInScreen() {
             Row {
                 Text(
                     text = "Terms of Service",
-                    style = MaterialTheme.typography.bodySmall.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color.Black,
                         textDecoration = TextDecoration.Underline
                     )
@@ -164,7 +165,7 @@ fun SignInScreen() {
                 Text(" and ")
                 Text(
                     text = "Privacy Policy",
-                    style = MaterialTheme.typography.bodySmall.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color.Black,
                         textDecoration = TextDecoration.Underline
                     )
@@ -208,6 +209,13 @@ fun SignInButton(icon: Painter, text: String) {
 )
 @Composable
 fun SignInScreenPreview() {
+    MyApplicationTheme {
+        SignInScreen()
+    }
+}
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun SignInScreenInteractivePreview() {
     MyApplicationTheme {
         SignInScreen()
     }
