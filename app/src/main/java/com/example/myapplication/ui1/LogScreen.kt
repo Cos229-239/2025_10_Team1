@@ -1,6 +1,4 @@
-// In: app/src/main/java/com/example/myapplication/ui1/LogScreen.kt
 package com.example.myapplication.ui1
-
 
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
@@ -22,19 +20,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.myapplication.R
+import com.example.myapplication.Screen // Import the Screen sealed class
+import com.example.myapplication.ui1.theme.AppGradients
 
-
+// Data classes
 data class RecentLog(val title: String, val color: Color)
-data class DropdownItem(val text: String, val backgroundColor: Color, val textColor: Color)
+data class DropdownItem(
+    val text: String,
+    val backgroundColor: Color,
+    val textColor: Color,
+    val route: String // Add route for navigation
+)
 
-
+// --- THIS IS THE MAIN FIX ---
+// The function signature now accepts both NavController and userName.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogScreen(userName: String, modifier: Modifier = Modifier) {
+fun LogScreen(navController: NavController, userName: String, modifier: Modifier = Modifier) {
     val recentLogs = remember {
         mutableStateListOf(
             RecentLog("Too Tired", Color(0xFFEAFDE9)),
@@ -44,23 +52,23 @@ fun LogScreen(userName: String, modifier: Modifier = Modifier) {
     }
     var newLogText by remember { mutableStateOf("") }
     val logColors = listOf(
-        Color(0xFFEAFDE9), // Light Green
-        Color(0xFFFFEFCB), // Light Orange
-        Color(0xFFF8E8FF), // Light Purple
-        Color(0xFFE0F7FA), // Light Cyan
-        Color(0xFFFFEBEE)  // Light Pink
+        Color(0xFFEAFDE9), Color(0xFFFFEFCB), Color(0xFFF8E8FF),
+        Color(0xFFE0F7FA), Color(0xFFFFEBEE)
     )
 
-    Column(modifier = modifier.fillMaxSize()) {
-        LogTopAppBar()
+    // Using a Box as the root allows the background to be set correctly.
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppGradients.neutral) // The gradient background
+    ) {
+        // The content is in a LazyColumn which is transparent by default.
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(top = 80.dp, bottom = 16.dp), // Padding for the app bar
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Spacer(modifier = Modifier.height(16.dp))
                 LogInputSection(
                     userName = userName,
                     text = newLogText,
@@ -74,31 +82,38 @@ fun LogScreen(userName: String, modifier: Modifier = Modifier) {
                 )
             }
             item {
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Recent Logs",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                 )
             }
             items(recentLogs) { log ->
-                RecentLogItem(log = log)
+                RecentLogItem(log = log, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
         }
+
+        // Pass NavController to the TopAppBar so it can handle navigation.
+        LogTopAppBar(navController = navController)
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogTopAppBar() {
+fun LogTopAppBar(navController: NavController) { // <-- Pass NavController here
     var menuExpanded by remember { mutableStateOf(false) }
     val menuItems = listOf(
-        DropdownItem("Focus", backgroundColor = Color(0xFFE8F5E9), textColor = Color(0xFF2E7D32)),
-        DropdownItem("Breakroom", backgroundColor = Color(0xFFE3F2FD), textColor = Color(0xFF1565C0)),
-        DropdownItem("Insights", backgroundColor = Color(0xFFFFF8E1), textColor = Color(0xFFF9A825)),
-        DropdownItem("Planner", backgroundColor = Color(0xFFF3E5F5), textColor = Color(0xFF6A1B9A)),
-        DropdownItem("Home", backgroundColor = Color(0xFFFFEBEE), textColor = Color(0xFFC62828)),
-        DropdownItem("Menu", backgroundColor = Color(0xFFECEFF1), textColor = Color(0xFF37474F))
+        DropdownItem("Focus", Color(0xFFE8F5E9), Color(0xFF2E7D32), Screen.Home.route), // Added routes
+        DropdownItem("Breakroom", Color(0xFFE3F2FD), Color(0xFF1565C0), Screen.Breakroom.route),
+        DropdownItem("Insights", Color(0xFFFFF8E1), Color(0xFFF9A825), Screen.Insights.route),
+        DropdownItem("Planner", Color(0xFFF3E5F5), Color(0xFF6A1B9A), Screen.Planner.route),
+        DropdownItem("Home", Color(0xFFFFEBEE), Color(0xFFC62828), Screen.Home.route),
+        DropdownItem("Menu", Color(0xFFECEFF1), Color(0xFF37474F), Screen.Menu.route)
     )
-
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -140,7 +155,7 @@ fun LogTopAppBar() {
                                 }
                             },
                             onClick = {
-                                Log.d("LogScreen", "${item.text} clicked")
+                                navController.navigate(item.route) // <-- Use NavController to navigate
                                 menuExpanded = false
                             }
                         )
@@ -161,7 +176,7 @@ fun LogInputSection(
     onTextChange: (String) -> Unit,
     onLogSubmitted: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Text(
             text = "What's stopping you\nright now, $userName?",
             style = MaterialTheme.typography.headlineSmall,
@@ -191,14 +206,14 @@ fun LogInputSection(
 }
 
 @Composable
-fun RecentLogItem(log: RecentLog) {
+fun RecentLogItem(log: RecentLog, modifier: Modifier = Modifier) {
     var isFlipped by remember { mutableStateOf(false) }
-
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
         animationSpec = tween(durationMillis = 600),
         label = "rotationAnimation"
     )
+    val density = LocalDensity.current
 
     fun getAiRecommendation(title: String): String {
         return when {
@@ -208,14 +223,13 @@ fun RecentLogItem(log: RecentLog) {
             else -> "A great first step is to take a deep breath. Stand up, stretch, and get a glass of water. A brief reset can do wonders for your focus and clarity."
         }
     }
-
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { isFlipped = !isFlipped }
             .graphicsLayer {
                 rotationY = rotation
-                cameraDistance = 8 * density
+                cameraDistance = 8 * density.density
             },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -256,9 +270,7 @@ fun CardBack(log: RecentLog, recommendation: String) {
         modifier = Modifier
             .fillMaxWidth()
             .background(log.color)
-            .graphicsLayer {
-                rotationY = 180f
-            }
+            .graphicsLayer { rotationY = 180f }
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -278,7 +290,3 @@ fun CardBack(log: RecentLog, recommendation: String) {
     }
 }
 
-// --- THIS IS THE FIX ---
-// The old LogBottomNavigationBar and LogScreenPreview have been removed
-// as they were causing errors and are no longer needed.
-// --- END OF FIX ---

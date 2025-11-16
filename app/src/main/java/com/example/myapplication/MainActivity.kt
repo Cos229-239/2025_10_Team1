@@ -138,7 +138,17 @@ fun NavigationGraph(
 
         // --- THIS IS THE FIX ---
         // The LogScreen only needs a userName, not a NavController.
-        composable(Screen.Log.route) { LogScreen(userName = "Jonathan") }
+        // This is the correct fix
+        // To this:
+        // TO THIS (The new, correct call):
+        composable(Screen.Log.route) {
+            LogScreen(        navController = navController,
+                userName = "Jonathan" // Or pass the actual user name if you have it
+            )
+        }
+
+
+
         // --- END OF FIX ---
 
         composable(Screen.Planner.route) {
@@ -206,6 +216,7 @@ fun MainApp() {
         bottomBar = { AppBottomNavigationBar(navController = navController, currentRoute = currentRoute) }
     ) { innerPadding ->
         NavigationGraph(
+
             navController = navController,
             modifier = Modifier.padding(innerPadding),
             tasks = tasks,
