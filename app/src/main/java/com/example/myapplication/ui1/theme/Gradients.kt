@@ -88,4 +88,12 @@ object AppGradients {
             Color(0xFFFFFFFF)  // White
         )
     )
+    // In Gradients.kt, add a new val
+    val log: Brush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFFE8F5E9), // A calm, light green
+            Color(0xFFFFFFFF)  // Fading to white
+        )
+    )
+
 }

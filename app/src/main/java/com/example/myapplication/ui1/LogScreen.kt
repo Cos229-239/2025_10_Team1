@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -38,8 +39,6 @@ data class DropdownItem(
     val route: String // Add route for navigation
 )
 
-// --- THIS IS THE MAIN FIX ---
-// The function signature now accepts both NavController and userName.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogScreen(navController: NavController, userName: String, modifier: Modifier = Modifier) {
@@ -56,11 +55,21 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
         Color(0xFFE0F7FA), Color(0xFFFFEBEE)
     )
 
+    // --- THIS IS THE ONLY CHANGE ---
+    // A lighter version of the purple-to-teal gradient from your image.
+    val logGradient: Brush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF5E3F89), // Lighter Purple
+            Color(0xFF2C7A7A)  // Lighter Teal/Cyan
+        )
+    )
+
     // Using a Box as the root allows the background to be set correctly.
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppGradients.neutral) // The gradient background
+            // The background now uses the new gradient
+            .background(logGradient)
     ) {
         // The content is in a LazyColumn which is transparent by default.
         LazyColumn(
@@ -86,6 +95,8 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
                 Text(
                     text = "Recent Logs",
                     style = MaterialTheme.typography.titleLarge,
+                    // Make text white to be readable on the new dark background
+                    color = Color.White,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -119,7 +130,9 @@ fun LogTopAppBar(navController: NavController) { // <-- Pass NavController here
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "My Log",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
+                    // Make title text white for readability
+                    color = Color.White
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.tisense_icon_2),
@@ -135,7 +148,9 @@ fun LogTopAppBar(navController: NavController) { // <-- Pass NavController here
                     Icon(
                         imageVector = Icons.Filled.Menu,
                         contentDescription = "Menu",
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(28.dp),
+                        // Make icon white for readability
+                        tint = Color.White
                     )
                 }
                 DropdownMenu(
@@ -180,6 +195,8 @@ fun LogInputSection(
         Text(
             text = "What's stopping you\nright now, $userName?",
             style = MaterialTheme.typography.headlineSmall,
+            // Make text white for readability
+            color = Color.White,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         OutlinedTextField(
@@ -189,7 +206,21 @@ fun LogInputSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            // Use OutlinedTextFieldDefaults.colors for Material 3
+            colors = OutlinedTextFieldDefaults.colors(
+                // --- THIS IS THE CHANGE ---
+                // Change text color to black for both focused and unfocused states
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+
+                cursorColor = Color.Black, // Also change the cursor to black
+                focusedBorderColor = Color.White,
+                unfocusedBorderColor = Color.LightGray,
+                // Make the container color a light, semi-transparent white
+                focusedContainerColor = Color.White.copy(alpha = 0.8f),
+                unfocusedContainerColor = Color.White.copy(alpha = 0.8f)
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -204,6 +235,8 @@ fun LogInputSection(
         }
     }
 }
+
+
 
 @Composable
 fun RecentLogItem(log: RecentLog, modifier: Modifier = Modifier) {
@@ -289,4 +322,3 @@ fun CardBack(log: RecentLog, recommendation: String) {
         )
     }
 }
-
