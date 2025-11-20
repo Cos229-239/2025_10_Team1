@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -62,28 +64,31 @@ import java.util.Locale
 
 @Composable
 fun HomeScreen(navController: NavController) {
+    // FIX 1: Define the standard purple-to-teal gradient.
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .verticalScroll(rememberScrollState()) // Makes the column scrollable
+            .background(standardGradient) // Apply the standard gradient
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // NOTE: The "item { }" wrappers have been removed.
-
         // --- Header ---
         Spacer(modifier = Modifier.height(16.dp))
         HomeHeader(onMenuClick = { navController.navigate(Screen.Menu.route) })
         Spacer(modifier = Modifier.height(32.dp))
 
         // --- Welcome Message ---
+        // FIX 2: Change text color to White for readability.
         Text(
             text = "Welcome back, Name!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.DarkGray,
+            color = Color.White,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(32.dp))
@@ -93,7 +98,7 @@ fun HomeScreen(navController: NavController) {
             text = "Current Insights",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color.Gray,
+            color = Color.White.copy(alpha = 0.8f), // Use semi-transparent white for subtitles
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -109,13 +114,12 @@ fun HomeScreen(navController: NavController) {
             text = "Where would you like to go?",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color.Gray,
+            color = Color.White.copy(alpha = 0.8f), // Use semi-transparent white for subtitles
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         NavigationButtons(navController = navController)
 
-        // This final spacer ensures there is always a small gap at the bottom
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
@@ -136,7 +140,8 @@ fun HomeHeader(onMenuClick: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Home", fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                // FIX 3: Update Header text colors.
+                Text(text = "Home", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Image(
@@ -145,13 +150,18 @@ fun HomeHeader(onMenuClick: () -> Unit) {
                     modifier = Modifier.size(92.dp)
                 )
             }
-            Text(text = currentDate, fontSize = 14.sp, color = Color.Gray)
+            Text(
+                text = currentDate,
+                fontSize = 14.sp,
+                color = Color.White.copy(alpha = 0.7f) // Subdued white for the date
+            )
         }
         IconButton(onClick = onMenuClick) {
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = "Menu",
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp),
+                tint = Color.White // Set icon tint to white
             )
         }
     }
@@ -184,7 +194,7 @@ fun InsightsDonutChart() {
                     drawArc(
                         color = color,
                         startAngle = startAngle,
-                        sweepAngle = sweepAngle - 4, // Creates gap between arcs
+                        sweepAngle = sweepAngle - 4,
                         useCenter = false,
                         style = Stroke(width = 55f, cap = StrokeCap.Butt)
                     )
@@ -203,7 +213,8 @@ fun InsightsDonutChart() {
                             .background(color)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = reason, fontSize = 14.sp)
+                    // FIX 4: Update Insight text color.
+                    Text(text = reason, fontSize = 14.sp, color = Color.White)
                 }
             }
         }
@@ -213,6 +224,7 @@ fun InsightsDonutChart() {
 
 @Composable
 fun MotivationalMessage() {
+    // This card's pastel color is fine and provides good contrast.
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = PastelYellow),
@@ -222,7 +234,8 @@ fun MotivationalMessage() {
             text = "Motivational Message :)",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+            color = Color.DarkGray // Ensure text inside card is readable
         )
     }
 }
@@ -246,8 +259,6 @@ fun NavigationButtons(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             NavButton("My Log", PastelYellow, Modifier.weight(1f)) { navController.navigate(Screen.Log.route) }
-            // --- THIS IS THE FIX ---
-            // The onClick action now navigates to the Screen.Focus.route.
             NavButton("Focus Session", PastelBlue, Modifier.weight(1f)) { navController.navigate(Screen.Focus.route) }
         }
     }
@@ -255,6 +266,7 @@ fun NavigationButtons(navController: NavController) {
 
 @Composable
 fun NavButton(text: String, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    // The pastel colors and dark text on these buttons are fine.
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))

@@ -18,24 +18,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.Screen
-// FIX 1: Import the shared DropdownItem from its central location.
 import com.example.myapplication.ui1.DropdownItem
-
-// FIX 2: The local definition of DropdownItem has been removed from here.
-// private data class DropdownItem(val text: String, val route: String) // <-- This line is deleted.
 
 @Composable
 fun FocusScreen(navController: NavController, modifier: Modifier = Modifier) {
-    // 1. Define a local gradient, following the LogScreen pattern.
-    val focusGradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF1D2951), Color(0xFF2C4079)) // Dark Blue gradient
+    // FIX: Define the standard gradient using the correct purple-to-teal colors.
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
-    // 2. Use a Box as the root layout, just like LogScreen.
+    // Use a Box as the root layout to apply the background.
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(focusGradient)
+            .background(standardGradient) // Apply the standard gradient
     ) {
         // Main Content Column
         Column(
@@ -49,12 +45,11 @@ fun FocusScreen(navController: NavController, modifier: Modifier = Modifier) {
                 text = "Ready to enter deep focus?",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.White // Set text to white for readability on dark background
+                color = Color.White // Text is already white for readability
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
-                    // Use your project's Screen sealed class for navigation
                     navController.navigate(Screen.FocusSession.route)
                 },
                 modifier = Modifier
@@ -62,14 +57,14 @@ fun FocusScreen(navController: NavController, modifier: Modifier = Modifier) {
                     .height(50.dp),
                 shape = MaterialTheme.shapes.large,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFA6E6DA) // Same style as LogScreen button
+                    containerColor = Color(0xFFA6E6DA) // This button color works well
                 )
             ) {
                 Text("Start a Focus Session", color = Color.DarkGray)
             }
         }
 
-        // 3. Place the custom TopAppBar inside the Box, floating on top.
+        // The TopAppBar floats on top of the gradient background.
         FocusTopAppBar(navController = navController)
     }
 }
@@ -94,7 +89,7 @@ private fun FocusTopAppBar(navController: NavController) {
             Text(
                 text = "Focus Mode",
                 style = MaterialTheme.typography.headlineMedium,
-                color = Color.White // White title for readability
+                color = Color.White // Title is already white
             )
         },
         actions = {
@@ -104,7 +99,7 @@ private fun FocusTopAppBar(navController: NavController) {
                         imageVector = Icons.Filled.Menu,
                         contentDescription = "Menu",
                         modifier = Modifier.size(28.dp),
-                        tint = Color.White // White icon for readability
+                        tint = Color.White // Icon is already white
                     )
                 }
                 DropdownMenu(

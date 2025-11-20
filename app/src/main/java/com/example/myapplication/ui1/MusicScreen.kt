@@ -29,10 +29,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
-import com.example.myapplication.ui1.AppHeader
 
 
-// --- UPDATED: MUSIC SCREEN ---
+// --- MUSIC SCREEN ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MusicScreen(
@@ -48,8 +47,9 @@ fun MusicScreen(
         }
     )
 
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF2C3E50), Color(0xFF4CA1AF))
+    // FIX 1: Use the standard purple-to-teal gradient.
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
     Scaffold(
@@ -67,7 +67,7 @@ fun MusicScreen(
             )
         },
         containerColor = Color.Transparent,
-        modifier = Modifier.background(gradient)
+        modifier = Modifier.background(standardGradient)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -86,6 +86,7 @@ fun MusicScreen(
             Button(
                 onClick = { audioPickerLauncher.launch("audio/*") },
                 shape = RoundedCornerShape(16.dp),
+                // The semi-transparent white button style already fits the new theme.
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f)),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -99,7 +100,7 @@ fun MusicScreen(
     }
 }
 
-// --- UPDATED: MUSIC PLAYER COMPOSABLE ---
+// --- MUSIC PLAYER COMPOSABLE ---
 @Composable
 fun MusicPlayer(musicUri: Uri?, modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -114,7 +115,8 @@ fun MusicPlayer(musicUri: Uri?, modifier: Modifier = Modifier) {
         }
     }
 
-    DisposableEffect(Unit) {
+    // Safely release the media player when the composable is disposed.
+    DisposableEffect(mediaPlayer) {
         onDispose {
             mediaPlayer?.stop()
             mediaPlayer?.release()
@@ -134,11 +136,13 @@ fun MusicPlayer(musicUri: Uri?, modifier: Modifier = Modifier) {
                 .fillMaxWidth(0.8f)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(20.dp))
+                // Semi-transparent background looks great on the new gradient.
                 .background(Color.White.copy(alpha = 0.1f))
                 .padding(32.dp)
         )
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Text colors are already white and are perfectly readable.
         Text(
             text = if (musicUri != null) "Your Music" else "Calm Meditation",
             style = MaterialTheme.typography.headlineMedium,
@@ -158,7 +162,8 @@ fun MusicPlayer(musicUri: Uri?, modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(72.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF4CA1AF))
+                // FIX 2: Use the teal color from the gradient for a consistent highlight.
+                .background(Color(0xFF2C7A7A))
                 .clickable {
                     mediaPlayer?.let {
                         if (it.isPlaying) {
@@ -181,3 +186,4 @@ fun MusicPlayer(musicUri: Uri?, modifier: Modifier = Modifier) {
         }
     }
 }
+

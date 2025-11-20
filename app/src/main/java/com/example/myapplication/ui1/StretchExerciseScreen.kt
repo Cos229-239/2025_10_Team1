@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.Screen
 import com.example.myapplication.Stretch
-import com.example.myapplication.ui1.AppHeader
 
 
 // --- STRETCH EXERCISE SCREEN ---
@@ -46,19 +45,19 @@ import com.example.myapplication.ui1.AppHeader
 @Composable
 fun StretchExerciseScreen(navController: NavController, stretches: List<Stretch>) {
 
-
-
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFFE6E6FA), Color(0xFFD8BFD8))
+    // FIX 1: Use the standard purple-to-teal gradient.
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Guided Stretches", fontWeight = FontWeight.Bold, color = Color.Black) },
+                // FIX 2: Update TopAppBar text and icon colors to white.
+                title = { Text("Guided Stretches", fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "Back", tint = Color.Black)
+                        Icon(Icons.Outlined.ArrowBack, "Back", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -67,7 +66,8 @@ fun StretchExerciseScreen(navController: NavController, stretches: List<Stretch>
             )
         },
         containerColor = Color.Transparent,
-        modifier = Modifier.background(gradient)
+        // Apply the standard gradient to the Scaffold's modifier.
+        modifier = Modifier.background(standardGradient)
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -96,33 +96,37 @@ fun StretchCard(stretch: Stretch, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.7f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        // FIX 3: Use a semi-transparent white background for consistency on dark themes.
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Elevation isn't needed on dark theme
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // FIX 4: Update internal card content colors to white.
             Icon(
                 imageVector = stretch.icon,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
-                tint = Color.Black.copy(alpha = 0.7f)
+                tint = Color.White.copy(alpha = 0.8f)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
                     text = stretch.name,
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stretch.description,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black.copy(alpha = 0.8f)
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
         }
     }
 }
+

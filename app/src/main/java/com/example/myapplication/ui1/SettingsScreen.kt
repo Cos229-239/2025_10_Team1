@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -50,8 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
 import com.example.myapplication.Screen
-import com.example.myapplication.ui1.AppHeader
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,17 +58,24 @@ fun SettingsScreen(navController: NavController) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var darkModeEnabled by remember { mutableStateOf(false) }
 
+    // FIX 1: Define the standard purple-to-teal gradient.
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
+    )
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
+            .background(standardGradient) // Apply the standard gradient
             .padding(WindowInsets.systemBars.asPaddingValues())
             .verticalScroll(rememberScrollState())
     ) {
+        // FIX 2: Change text color to White for readability.
         Text(
             text = "Settings",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
+            color = Color.White,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
         )
 
@@ -142,7 +148,7 @@ fun SettingsScreen(navController: NavController) {
             Text(
                 text = "App ver 2.0.1",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
+                color = Color.White.copy(alpha = 0.7f) // Use semi-transparent white
             )
         }
     }
@@ -164,17 +170,18 @@ fun SettingsProfileHeader(name: String, email: String, onClick: () -> Unit) {
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape)
-                .border(2.dp, Color.LightGray, CircleShape)
+                .border(2.dp, Color.White.copy(alpha = 0.5f), CircleShape) // Use semi-transparent white for border
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(text = email, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            // FIX 3: Update text colors for dark theme.
+            Text(text = name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = email, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.7f))
         }
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = "Navigate",
-            tint = Color.Gray,
+            tint = Color.White.copy(alpha = 0.7f), // Use semi-transparent white for icon
             modifier = Modifier.size(16.dp)
         )
     }
@@ -185,7 +192,7 @@ fun SettingsGroupHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.bodySmall,
-        color = Color.Gray,
+        color = Color.White.copy(alpha = 0.6f), // Use semi-transparent white for header
         fontWeight = FontWeight.Bold,
         modifier = Modifier
             .fillMaxWidth()
@@ -226,17 +233,17 @@ fun SettingsItem(
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            color = Color.White // Set item text to white
         )
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = "Navigate",
-            tint = Color.Gray,
+            tint = Color.White.copy(alpha = 0.7f), // Use semi-transparent white
             modifier = Modifier.size(16.dp)
         )
     }
 }
-
 
 @Composable
 fun SettingSwitchItem(
@@ -270,7 +277,7 @@ fun SettingSwitchItem(
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            Text(text = title, style = MaterialTheme.typography.bodyLarge, color = Color.White) // Set item text to white
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }

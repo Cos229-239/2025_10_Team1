@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -72,25 +73,40 @@ fun InsightsScreen(tasks: List<PlannerTask>, navController: NavController, modif
         Tip("Practice Self-Compassion", "https://www.youtube.com/watch?v=11U0h0DPu7Q", R.drawable.ic_tip_placeholder)
     )
 
+    // FIX 1: Define the standard purple-to-teal gradient.
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
+    )
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(standardGradient) // Apply the standard gradient
             .padding(WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues())
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
-
-
     ) {
         AppHeader(title = "Insights", navController = navController)
         Spacer(modifier = Modifier.height(32.dp))
-        Text(text = "This week's Insights", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Normal)
+
+        // FIX 2: Change text color to White for readability.
+        Text(
+            text = "This week's Insights",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Normal,
+            color = Color.White
+        )
         Spacer(modifier = Modifier.height(20.dp))
         InsightsChart(segments = segments)
         Spacer(modifier = Modifier.height(32.dp))
         SummaryCard(completedHours = completedHours, completedTasks = totalTasks)
         Spacer(modifier = Modifier.height(32.dp))
-        Text(text = "Tips to keep you on track", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Normal)
+        Text(
+            text = "Tips to keep you on track",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Normal,
+            color = Color.White.copy(alpha = 0.9f) // Use slightly transparent white for sub-headers
+        )
         Spacer(modifier = Modifier.height(16.dp))
         TipsSection(tips = tips)
         Spacer(modifier = Modifier.height(16.dp))
@@ -149,12 +165,14 @@ fun LegendItem(color: Color, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
         Box(modifier = Modifier.size(20.dp).background(color, shape = CircleShape))
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = text, style = MaterialTheme.typography.bodyLarge)
+        // FIX 3: Change legend text to white
+        Text(text = text, style = MaterialTheme.typography.bodyLarge, color = Color.White)
     }
 }
 
 @Composable
 fun SummaryCard(completedHours: Int, completedTasks: Int) {
+    // This card's pastel color works well as a highlight.
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -169,7 +187,8 @@ fun SummaryCard(completedHours: Int, completedTasks: Int) {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("$completedTasks tasks.") }
             },
             modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.DarkGray // Ensure text inside is readable
         )
     }
 }
@@ -192,13 +211,14 @@ fun TipsSection(tips: List<Tip>) {
 
 @Composable
 fun TipCard(tip: Tip, onClick: () -> Unit) {
+    // FIX 4: Update TipCard for dark theme
     Card(
         modifier = Modifier
             .width(200.dp)
             .height(120.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0).copy(alpha = 0.4f))
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.15f)) // Use semi-transparent white
     ) {
         Box(
             modifier = Modifier
@@ -220,7 +240,7 @@ fun TipCard(tip: Tip, onClick: () -> Unit) {
                 text = tip.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black.copy(alpha = 0.7f)
+                color = Color.White.copy(alpha = 0.9f) // Use bright white for text
             )
         }
     }

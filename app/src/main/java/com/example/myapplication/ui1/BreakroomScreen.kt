@@ -26,8 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.myapplication.ui1.AppHeader
-
 import com.example.myapplication.Screen
 import kotlinx.coroutines.delay
 
@@ -49,37 +47,48 @@ fun BreakroomScreen(navController: NavController, modifier: Modifier = Modifier)
         }
     }
 
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFFA4EBF3), Color(0xFFD4F1F4))
+    // FIX 1: Use the standard purple-to-teal gradient
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
-    Column(
+    // FIX 2: Use a Box as the root to ensure the gradient fills the whole screen.
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(gradient)
-            .padding(WindowInsets.systemBars.asPaddingValues())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(standardGradient)
     ) {
-        AppHeader(title = "Breakroom", navController = navController)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Let's take a break, Name.",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier.align(Alignment.Start)
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        BreakTimer(
-            remainingTimeSeconds = remainingTimeSeconds,
-            isRunning = isRunning,
-            onToggle = { isRunning = !isRunning }
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        BreathingGuide()
-        Spacer(modifier = Modifier.weight(1f))
-        BreakActivities(navController = navController)
-        Spacer(modifier = Modifier.height(32.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(WindowInsets.systemBars.asPaddingValues())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // AppHeader is already set up to be transparent and work on a dark background
+            AppHeader(title = "Breakroom", navController = navController)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // FIX 3: Set text color to White for readability
+            Text(
+                text = "Let's take a break, Name.",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Normal,
+                color = Color.White, // Adjusted for dark background
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            BreakTimer(
+                remainingTimeSeconds = remainingTimeSeconds,
+                isRunning = isRunning,
+                onToggle = { isRunning = !isRunning }
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            BreathingGuide()
+            Spacer(modifier = Modifier.weight(1f))
+            BreakActivities(navController = navController)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
@@ -112,12 +121,14 @@ fun BreakTimer(
                 text = timeString,
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Bold,
-                fontSize = 60.sp
+                fontSize = 60.sp,
+                color = Color.White // FIX: Set text color to White
             )
             Icon(
                 imageVector = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = if (isRunning) "Pause Timer" else "Start Timer",
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(40.dp),
+                tint = Color.White // FIX: Set icon tint to White
             )
         }
     }
@@ -130,13 +141,14 @@ fun BreathingGuide() {
             imageVector = Icons.Outlined.Air,
             contentDescription = "Breathe Icon",
             modifier = Modifier.size(48.dp),
-            tint = Color.DarkGray
+            tint = Color.White.copy(alpha = 0.9f) // FIX: Set icon tint to White
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = "Inhale",
             style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Normal,
+            color = Color.White.copy(alpha = 0.9f) // FIX: Set text color to White
         )
     }
 }
@@ -155,26 +167,24 @@ fun BreakActivities(navController: NavController) {
             ActivityButton(
                 text = "Breathe",
                 icon = Icons.Outlined.Cloud,
-                color = Color(0xFFFFF9C4),
+                color = Color(0xFFFFF9C4), // Keeping pastel colors for buttons
                 modifier = Modifier
                     .weight(1f)
-                        .clickable { navController.navigate(Screen.BreathingExercise.route) }
-
+                    .clickable { navController.navigate(Screen.BreathingExercise.route) }
             )
             ActivityButton(
                 text = "Stretch",
                 icon = Icons.Outlined.AccessibilityNew,
-                color = Color(0xFFF3E5F5),
+                color = Color(0xFFF3E5F5), // Keeping pastel colors for buttons
                 modifier = Modifier
                     .weight(1f)
                     .clickable { navController.navigate(Screen.Stretch.route) }
             )
         }
-        // This button now navigates to the music screen
         ActivityButton(
             text = "Play Music",
             icon = Icons.Outlined.MusicNote,
-            color = Color(0xFFFFE0B2),
+            color = Color(0xFFFFE0B2), // Keeping pastel colors for buttons
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .clickable { navController.navigate(Screen.Music.route) }
@@ -194,9 +204,10 @@ fun ActivityButton(text: String, icon: ImageVector, color: Color, modifier: Modi
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.DarkGray) // Set tint for visibility
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = text, fontWeight = FontWeight.Bold)
+            Text(text = text, fontWeight = FontWeight.Bold, color = Color.DarkGray) // Set color for visibility
         }
     }
 }
+

@@ -35,24 +35,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.Stretch
-import com.example.myapplication.ui1.AppHeader
 
 
 // --- STRETCH DETAIL SCREEN ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StretchDetailScreen(stretch: Stretch, navController: NavController) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFFE6E6FA), Color(0xFFFFFFFF))
+    // FIX 1: Use the standard purple-to-teal gradient.
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stretch.name, fontWeight = FontWeight.Bold, color = Color.Black) },
+                // FIX 2: Update TopAppBar text and icon colors to white.
+                title = { Text(stretch.name, fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Outlined.ArrowBack, "Back", tint = Color.Black)
+                        Icon(Icons.Outlined.ArrowBack, "Back", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -61,7 +62,8 @@ fun StretchDetailScreen(stretch: Stretch, navController: NavController) {
             )
         },
         containerColor = Color.Transparent,
-        modifier = Modifier.background(gradient)
+        // Apply the standard gradient to the Scaffold's modifier.
+        modifier = Modifier.background(standardGradient)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -85,10 +87,12 @@ fun StretchDetailScreen(stretch: Stretch, navController: NavController) {
 
             Spacer(Modifier.height(32.dp))
 
+            // FIX 3: Update content text colors to white for readability.
             Text(
                 text = "How to do it",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
+                color = Color.White,
                 modifier = Modifier.align(Alignment.Start)
             )
 
@@ -98,6 +102,7 @@ fun StretchDetailScreen(stretch: Stretch, navController: NavController) {
                 text = stretch.detailedDescription,
                 style = MaterialTheme.typography.bodyLarge,
                 lineHeight = 24.sp,
+                color = Color.White.copy(alpha = 0.9f), // Use a slightly transparent white for body text.
                 modifier = Modifier.align(Alignment.Start)
             )
 
