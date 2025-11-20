@@ -27,17 +27,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
-import com.example.myapplication.Screen // Import the Screen sealed class
-import com.example.myapplication.ui1.theme.AppGradients
+import com.example.myapplication.Screen
+// FIX 1: Import the shared DropdownItem from SharedUI.kt
+import com.example.myapplication.ui1.DropdownItem
 
 // Data classes
 data class RecentLog(val title: String, val color: Color)
-data class DropdownItem(
-    val text: String,
-    val backgroundColor: Color,
-    val textColor: Color,
-    val route: String // Add route for navigation
-)
+
+// FIX 2: The local definition of DropdownItem has been removed from here.
+// data class DropdownItem(...) <-- THIS IS NOW GONE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,8 +53,6 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
         Color(0xFFE0F7FA), Color(0xFFFFEBEE)
     )
 
-    // --- THIS IS THE ONLY CHANGE ---
-    // A lighter version of the purple-to-teal gradient from your image.
     val logGradient: Brush = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF5E3F89), // Lighter Purple
@@ -64,14 +60,11 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
         )
     )
 
-    // Using a Box as the root allows the background to be set correctly.
     Box(
         modifier = modifier
             .fillMaxSize()
-            // The background now uses the new gradient
             .background(logGradient)
     ) {
-        // The content is in a LazyColumn which is transparent by default.
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(top = 80.dp, bottom = 16.dp), // Padding for the app bar
@@ -95,7 +88,6 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
                 Text(
                     text = "Recent Logs",
                     style = MaterialTheme.typography.titleLarge,
-                    // Make text white to be readable on the new dark background
                     color = Color.White,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -107,7 +99,6 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
             }
         }
 
-        // Pass NavController to the TopAppBar so it can handle navigation.
         LogTopAppBar(navController = navController)
     }
 }
@@ -115,23 +106,25 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogTopAppBar(navController: NavController) { // <-- Pass NavController here
+fun LogTopAppBar(navController: NavController) {
     var menuExpanded by remember { mutableStateOf(false) }
+
+    // FIX 3: Use the simpler, shared DropdownItem(text, route)
     val menuItems = listOf(
-        DropdownItem("Focus", Color(0xFFE8F5E9), Color(0xFF2E7D32), Screen.Home.route), // Added routes
-        DropdownItem("Breakroom", Color(0xFFE3F2FD), Color(0xFF1565C0), Screen.Breakroom.route),
-        DropdownItem("Insights", Color(0xFFFFF8E1), Color(0xFFF9A825), Screen.Insights.route),
-        DropdownItem("Planner", Color(0xFFF3E5F5), Color(0xFF6A1B9A), Screen.Planner.route),
-        DropdownItem("Home", Color(0xFFFFEBEE), Color(0xFFC62828), Screen.Home.route),
-        DropdownItem("Menu", Color(0xFFECEFF1), Color(0xFF37474F), Screen.Menu.route)
+        DropdownItem("Focus", Screen.Focus.route), // Use the new Focus route
+        DropdownItem("Breakroom", Screen.Breakroom.route),
+        DropdownItem("Insights", Screen.Insights.route),
+        DropdownItem("Planner", Screen.Planner.route),
+        DropdownItem("Home", Screen.Home.route),
+        DropdownItem("Menu", Screen.Menu.route)
     )
+
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "My Log",
                     style = MaterialTheme.typography.headlineMedium,
-                    // Make title text white for readability
                     color = Color.White
                 )
                 Icon(
@@ -149,7 +142,6 @@ fun LogTopAppBar(navController: NavController) { // <-- Pass NavController here
                         imageVector = Icons.Filled.Menu,
                         contentDescription = "Menu",
                         modifier = Modifier.size(28.dp),
-                        // Make icon white for readability
                         tint = Color.White
                     )
                 }
@@ -158,19 +150,11 @@ fun LogTopAppBar(navController: NavController) { // <-- Pass NavController here
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     menuItems.forEach { item ->
+                        // The DropdownMenuItem now has a standard appearance
                         DropdownMenuItem(
-                            text = {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(50))
-                                        .background(item.backgroundColor)
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    Text(item.text, color = item.textColor)
-                                }
-                            },
+                            text = { Text(item.text) },
                             onClick = {
-                                navController.navigate(item.route) // <-- Use NavController to navigate
+                                navController.navigate(item.route)
                                 menuExpanded = false
                             }
                         )
@@ -195,7 +179,6 @@ fun LogInputSection(
         Text(
             text = "What's stopping you\nright now, $userName?",
             style = MaterialTheme.typography.headlineSmall,
-            // Make text white for readability
             color = Color.White,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -207,17 +190,12 @@ fun LogInputSection(
                 .fillMaxWidth()
                 .height(120.dp),
             shape = RoundedCornerShape(12.dp),
-            // Use OutlinedTextFieldDefaults.colors for Material 3
             colors = OutlinedTextFieldDefaults.colors(
-                // --- THIS IS THE CHANGE ---
-                // Change text color to black for both focused and unfocused states
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
-
-                cursorColor = Color.Black, // Also change the cursor to black
+                cursorColor = Color.Black,
                 focusedBorderColor = Color.White,
                 unfocusedBorderColor = Color.LightGray,
-                // Make the container color a light, semi-transparent white
                 focusedContainerColor = Color.White.copy(alpha = 0.8f),
                 unfocusedContainerColor = Color.White.copy(alpha = 0.8f)
             )
@@ -235,7 +213,6 @@ fun LogInputSection(
         }
     }
 }
-
 
 
 @Composable

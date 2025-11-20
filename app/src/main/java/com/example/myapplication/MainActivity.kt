@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel // <-- ADD THIS IMPORT
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -44,6 +45,8 @@ import com.example.myapplication.ui1.AccountScreen
 import com.example.myapplication.ui1.BreakroomScreen
 import com.example.myapplication.ui1.BreathingExerciseScreen
 import com.example.myapplication.ui1.EditProfileScreen
+import com.example.myapplication.ui1.FocusScreen // <-- ADD THIS IMPORT
+import com.example.myapplication.ui1.FocusSessionScreen // <-- ADD THIS IMPORT
 import com.example.myapplication.ui1.HomeScreen
 import com.example.myapplication.ui1.InsightsScreen
 import com.example.myapplication.ui1.LogScreen
@@ -86,6 +89,8 @@ sealed class Screen(val route: String) {
     object EditProfile : Screen("edit_profile")
     object Menu : Screen("menu")
     object Music : Screen("music")
+    object Focus : Screen("focus") // <-- ADD THIS ROUTE
+    object FocusSession : Screen("focus_session") // <-- ADD THIS ROUTE
 
     object StretchDetail : Screen("stretch_detail/{name}") {
         fun createRoute(name: String) = "stretch_detail/$name"
@@ -136,20 +141,12 @@ fun NavigationGraph(
         composable(Screen.BreathingExercise.route) { BreathingExerciseScreen(navController = navController) }
         composable(Screen.Stretch.route) { StretchExerciseScreen(navController = navController, stretches = stretchDataMap.values.toList()) }
 
-        // --- THIS IS THE FIX ---
-        // The LogScreen only needs a userName, not a NavController.
-        // This is the correct fix
-        // To this:
-        // TO THIS (The new, correct call):
         composable(Screen.Log.route) {
-            LogScreen(        navController = navController,
+            LogScreen(
+                navController = navController,
                 userName = "Jonathan" // Or pass the actual user name if you have it
             )
         }
-
-
-
-        // --- END OF FIX ---
 
         composable(Screen.Planner.route) {
             PlannerScreen(
@@ -180,6 +177,18 @@ fun NavigationGraph(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Stretch not found!") }
             }
         }
+
+        // --- ADDED FOCUS SCREENS ---
+        composable(Screen.Focus.route) {
+            FocusScreen(navController = navController)
+        }
+        composable(Screen.FocusSession.route) {
+            FocusSessionScreen(
+                navController = navController,
+                viewModel = viewModel() // This automatically provides the FocusSessionViewModel
+            )
+        }
+        // --- END OF ADDITION ---
     }
 }
 
