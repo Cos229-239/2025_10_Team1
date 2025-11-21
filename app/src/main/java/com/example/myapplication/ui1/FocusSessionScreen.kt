@@ -28,34 +28,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
+import com.example.myapplication.Screen
 
-
-/* ---------- Root Nav App ---------- */
-
-@Composable
-fun MainApp(vm: FocusSessionViewModel = viewModel()) {
-    val navController = rememberNavController()
-
-    NavHost(
-        navController = navController,
-        startDestination = "focus"
-    ) {
-        composable("focus") {
-            FocusSessionScreen(vm = vm, navController = navController)
-        }
-        composable("note/{noteText}") { backStackEntry ->
-            val note = backStackEntry.arguments?.getString("noteText").orEmpty()
-            NoteDetailScreen(note = note, navController = navController)
-        }
-    }
-}
 
 /* ---------- Focus Screen ---------- */
 
@@ -71,8 +48,7 @@ fun FocusSessionScreen(
     var noteText by remember { mutableStateOf("") }
 
     Scaffold(
-        topBar = { TopBar() },
-        bottomBar = { BottomNavBar() },
+        topBar = { TisenseHeader(onMenuClick = { navController?.navigate(Screen.Menu.route) }) },
         contentWindowInsets = WindowInsets.safeDrawing
     ) { innerPadding ->
         Column(
@@ -266,48 +242,6 @@ fun NoteDetailScreen(note: String, navController: NavController) {
 /* ---------- Supporting UI Components ---------- */
 
 @Composable
-private fun TopBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp)
-    ) {
-        Text(
-            text = "Focus",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF202020),
-            modifier = Modifier.align(Alignment.CenterStart)
-        )
-
-        // Simple hamburger icon placeholder to match Figma
-        Column(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(22.dp)
-                    .height(2.dp)
-                    .background(Color.Black)
-            )
-            Box(
-                modifier = Modifier
-                    .width(22.dp)
-                    .height(2.dp)
-                    .background(Color.Black)
-            )
-            Box(
-                modifier = Modifier
-                    .width(22.dp)
-                    .height(2.dp)
-                    .background(Color.Black)
-            )
-        }
-    }
-}
-
-@Composable
 private fun Banner(text: String) {
     Box(
         modifier = Modifier
@@ -443,33 +377,5 @@ private fun GhostButton(
             color = Color(0xFF9A9A9A),
             textAlign = TextAlign.Center
         )
-    }
-}
-
-@Composable
-private fun BottomNavBar() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFFF7F7F7))
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        listOf("Home", "Log", "Planner", "Insights", "Account").forEach { NavItem(it) }
-    }
-}
-
-@Composable
-private fun NavItem(label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(width = 28.dp, height = 20.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(Color(0xFFE0E0E0))
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(label, fontSize = 14.sp)
     }
 }

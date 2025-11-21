@@ -213,7 +213,7 @@ fun NavigationButtons(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             NavButton("My Log", PastelYellow, Modifier.weight(1f)) { navController.navigate(Screen.Log.route) }
-            NavButton("Focus Session", PastelBlue, Modifier.weight(1f)) { /* TODO: Add navigation */ }
+            NavButton("Focus Session", PastelBlue, Modifier.weight(1f)) { navController.navigate(Screen.Focus.route) }
         }
     }
 }

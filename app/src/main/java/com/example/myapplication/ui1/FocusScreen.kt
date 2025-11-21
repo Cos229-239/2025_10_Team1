@@ -1,9 +1,11 @@
 package com.example.myapplication.ui1
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 @Composable
 fun FocusScreen(navController: NavController) {
-    // TODO: Add the code from your teammate's zip file here
+    val vm: FocusSessionViewModel = viewModel()
+    FocusSessionScreen(vm = vm, navController = navController)
 }

@@ -40,6 +40,7 @@ import com.example.myapplication.ui1.AccountScreen
 import com.example.myapplication.ui1.BreakroomScreen
 import com.example.myapplication.ui1.BreathingExerciseScreen
 import com.example.myapplication.ui1.EditProfileScreen
+import com.example.myapplication.ui1.FocusScreen
 import com.example.myapplication.ui1.HomeScreen
 import com.example.myapplication.ui1.InsightsScreen
 import com.example.myapplication.ui1.LogScreen
@@ -82,6 +83,7 @@ sealed class Screen(val route: String) {
     object EditProfile : Screen("edit_profile")
     object Menu : Screen("menu")
     object Music : Screen("music")
+    object Focus : Screen("focus") // <- Added Focus Screen
 
     object StretchDetail : Screen("stretch_detail/{name}") {
         fun createRoute(name: String) = "stretch_detail/$name"
@@ -152,6 +154,7 @@ fun NavigationGraph(
                 onMusicSelect = onMusicSelect
             )
         }
+        composable(Screen.Focus.route) { FocusScreen(navController = navController) } // <- Added Focus Screen route
         composable(Screen.StretchDetail.route) { backStackEntry ->
             val stretchName = backStackEntry.arguments?.getString("name")
             val stretch = stretchDataMap[stretchName]
