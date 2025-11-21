@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,7 +35,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel // <-- ADD THIS IMPORT
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -45,17 +46,19 @@ import com.example.myapplication.ui1.AccountScreen
 import com.example.myapplication.ui1.BreakroomScreen
 import com.example.myapplication.ui1.BreathingExerciseScreen
 import com.example.myapplication.ui1.EditProfileScreen
-import com.example.myapplication.ui1.FocusScreen // <-- ADD THIS IMPORT
-import com.example.myapplication.ui1.FocusSessionScreen // <-- ADD THIS IMPORT
+import com.example.myapplication.ui1.FocusScreen
+import com.example.myapplication.ui1.FocusSessionScreen
 import com.example.myapplication.ui1.HomeScreen
 import com.example.myapplication.ui1.InsightsScreen
 import com.example.myapplication.ui1.LogScreen
+import com.example.myapplication.ui1.LoginScreen
 import com.example.myapplication.ui1.MenuScreen
 import com.example.myapplication.ui1.MusicScreen
 import com.example.myapplication.ui1.PlannerScreen
 import com.example.myapplication.ui1.SettingsScreen
 import com.example.myapplication.ui1.StretchDetailScreen
 import com.example.myapplication.ui1.StretchExerciseScreen
+import com.example.myapplication.ui1.WelcomeScreen // <-- FIX 1: Import WelcomeScreen
 import com.example.myapplication.ui1.theme.MyApplicationTheme
 
 // --- Data Classes & Enums ---
@@ -77,6 +80,8 @@ data class BottomNavItem(val label: String, val icon: Any, val route: String)
 data class MenuItem(val title: String, val color: Color, val route: String)
 
 sealed class Screen(val route: String) {
+    object Welcome : Screen("welcome") // <-- FIX 2: Add Welcome route
+    object Login : Screen("login")
     object Home : Screen("home")
     object Breakroom : Screen("breakroom")
     object BreathingExercise : Screen("breathing_exercise")
@@ -89,8 +94,8 @@ sealed class Screen(val route: String) {
     object EditProfile : Screen("edit_profile")
     object Menu : Screen("menu")
     object Music : Screen("music")
-    object Focus : Screen("focus") // <-- ADD THIS ROUTE
-    object FocusSession : Screen("focus_session") // <-- ADD THIS ROUTE
+    object Focus : Screen("focus")
+    object FocusSession : Screen("focus_session")
 
     object StretchDetail : Screen("stretch_detail/{name}") {
         fun createRoute(name: String) = "stretch_detail/$name"
@@ -133,9 +138,13 @@ fun NavigationGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = Screen.Welcome.route, // <-- FIX 3: Set Welcome as the start destination
         modifier = modifier
     ) {
+        // Add the WelcomeScreen to the navigation graph
+        composable(Screen.Welcome.route) { WelcomeScreen(navController = navController) }
+        composable(Screen.Login.route) { LoginScreen(navController = navController) }
+
         composable(Screen.Home.route) { HomeScreen(navController = navController) }
         composable(Screen.Breakroom.route) { BreakroomScreen(navController = navController) }
         composable(Screen.BreathingExercise.route) { BreathingExerciseScreen(navController = navController) }
@@ -221,8 +230,15 @@ fun MainApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // Hide bottom bar on login and welcome screens
+    val showBottomBar = currentRoute != Screen.Login.route && currentRoute != Screen.Welcome.route // <-- FIX 4: Hide bottom bar on welcome screen
+
     Scaffold(
-        bottomBar = { AppBottomNavigationBar(navController = navController, currentRoute = currentRoute) }
+        bottomBar = {
+            if (showBottomBar) {
+                AppBottomNavigationBar(navController = navController, currentRoute = currentRoute)
+            }
+        }
     ) { innerPadding ->
         NavigationGraph(
 
@@ -266,24 +282,33 @@ fun AppBottomNavigationBar(navController: NavController, currentRoute: String?) 
 
     NavigationBar {
         items.forEach { item ->
+            val isSelected = currentRoute == item.route
             NavigationBarItem(
                 icon = {
-                    val iconModifier = Modifier.size(28.dp)
-                    when (val icon = item.icon) {
-                        is Int -> Icon(painter = painterResource(id = icon), contentDescription = item.label, modifier = iconModifier)
-                        is ImageVector -> Icon(imageVector = icon, contentDescription = item.label, modifier = iconModifier)
+                    val iconModifier = Modifier.size(24.dp)
+                    when (item.icon) {
+                        is Int -> Icon(
+                            painter = painterResource(id = item.icon),
+                            contentDescription = item.label,
+                            modifier = iconModifier
+                        )
+                        is ImageVector -> Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            modifier = iconModifier
+                        )
                     }
                 },
-                label = { Text(text = item.label, fontSize = 12.sp, softWrap = false) },
-                selected = currentRoute == item.route,
+                label = { Text(item.label, fontSize = 10.sp) },
+                selected = isSelected,
                 onClick = {
                     navController.navigate(item.route) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        popUpTo(navController.graph.startDestinationId)
                         launchSingleTop = true
-                        restoreState = true
                     }
                 }
             )
         }
     }
 }
+
