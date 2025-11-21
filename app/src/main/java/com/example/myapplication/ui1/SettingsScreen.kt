@@ -31,7 +31,6 @@ import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
 import com.example.myapplication.Screen
+import com.example.myapplication.ui1.AppHeader
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,93 +59,91 @@ fun SettingsScreen(navController: NavController) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var darkModeEnabled by remember { mutableStateOf(false) }
 
-    Scaffold(topBar = { TisenseHeader(onMenuClick = { navController.navigate(Screen.Menu.route) }) }) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(it)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
-            )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(WindowInsets.systemBars.asPaddingValues())
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
+        )
 
-            SettingsProfileHeader(
-                name = "Kapil Mohan",
-                email = "Edit personal details",
-                onClick = { navController.navigate(Screen.EditProfile.route) }
-            )
+        SettingsProfileHeader(
+            name = "Kapil Mohan",
+            email = "Edit personal details",
+            onClick = { navController.navigate(Screen.EditProfile.route) }
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            SettingSwitchItem(
-                title = "Dark Mode",
-                icon = Icons.Outlined.NightsStay,
-                iconBgColor = Color.DarkGray,
-                checked = darkModeEnabled,
-                onCheckedChange = { darkModeEnabled = it }
-            )
+        SettingSwitchItem(
+            title = "Dark Mode",
+            icon = Icons.Outlined.NightsStay,
+            iconBgColor = Color.DarkGray,
+            checked = darkModeEnabled,
+            onCheckedChange = { darkModeEnabled = it }
+        )
 
-            SettingsGroupHeader("Profile")
-            SettingsItem(
-                title = "Edit Profile",
-                icon = Icons.Outlined.Person,
-                iconBgColor = Color(0xFFFFA726),
-                onClick = { navController.navigate(Screen.EditProfile.route) }
-            )
-            SettingsItem(
-                title = "Change Password",
-                icon = Icons.Outlined.Lock,
-                iconBgColor = Color(0xFF42A5F5),
-                onClick = { navController.navigate(Screen.EditProfile.route) }
-            )
+        SettingsGroupHeader("Profile")
+        SettingsItem(
+            title = "Edit Profile",
+            icon = Icons.Outlined.Person,
+            iconBgColor = Color(0xFFFFA726),
+            onClick = { navController.navigate(Screen.EditProfile.route) }
+        )
+        SettingsItem(
+            title = "Change Password",
+            icon = Icons.Outlined.Lock,
+            iconBgColor = Color(0xFF42A5F5),
+            onClick = { navController.navigate(Screen.EditProfile.route) }
+        )
 
-            SettingsGroupHeader("Notifications")
-            SettingSwitchItem(
-                title = "Notifications",
-                icon = Icons.Filled.Notifications,
-                iconBgColor = Color(0xFF66BB6A),
-                checked = notificationsEnabled,
-                onCheckedChange = { notificationsEnabled = it }
-            )
+        SettingsGroupHeader("Notifications")
+        SettingSwitchItem(
+            title = "Notifications",
+            icon = Icons.Filled.Notifications,
+            iconBgColor = Color(0xFF66BB6A),
+            checked = notificationsEnabled,
+            onCheckedChange = { notificationsEnabled = it }
+        )
 
-            SettingsGroupHeader("Regional")
-            SettingsItem(
-                title = "Language",
-                icon = Icons.Outlined.Translate,
-                iconBgColor = Color(0xFF7E57C2),
-                onClick = { navController.navigate(Screen.EditProfile.route) }
-            )
+        SettingsGroupHeader("Regional")
+        SettingsItem(
+            title = "Language",
+            icon = Icons.Outlined.Translate,
+            iconBgColor = Color(0xFF7E57C2),
+            onClick = { navController.navigate(Screen.EditProfile.route) }
+        )
 
-            SettingsItem(
-                title = "Logout",
-                icon = Icons.AutoMirrored.Filled.Logout,
-                iconBgColor = Color(0xFFEF5350),
-                onClick = {
-                    navController.navigate(Screen.Planner.route) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
+        SettingsItem(
+            title = "Logout",
+            icon = Icons.AutoMirrored.Filled.Logout,
+            iconBgColor = Color(0xFFEF5350),
+            onClick = {
+                navController.navigate(Screen.Planner.route) {
+                    popUpTo(navController.graph.id) {
+                        inclusive = true
                     }
                 }
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "App ver 2.0.1",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
             }
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "App ver 2.0.1",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
         }
     }
 }

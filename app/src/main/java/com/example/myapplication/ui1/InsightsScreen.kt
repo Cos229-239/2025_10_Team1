@@ -3,7 +3,25 @@ package com.example.myapplication.ui1
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -13,7 +31,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,8 +50,8 @@ import androidx.navigation.NavController
 import com.example.myapplication.ChartSegment
 import com.example.myapplication.PlannerTask
 import com.example.myapplication.R
-import com.example.myapplication.Screen
 import com.example.myapplication.Tip
+
 
 // --- INSIGHTS SCREEN ---
 @Composable
@@ -55,29 +72,28 @@ fun InsightsScreen(tasks: List<PlannerTask>, navController: NavController, modif
         Tip("Practice Self-Compassion", "https://www.youtube.com/watch?v=11U0h0DPu7Q", R.drawable.ic_tip_placeholder)
     )
 
-    Scaffold(
-        topBar = { TisenseHeader(onMenuClick = { navController.navigate(Screen.Menu.route) }) }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues())
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp)
+
+
     ) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(it)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
-        ) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(text = "This week's Insights", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Normal)
-            Spacer(modifier = Modifier.height(20.dp))
-            InsightsChart(segments = segments)
-            Spacer(modifier = Modifier.height(32.dp))
-            SummaryCard(completedHours = completedHours, completedTasks = totalTasks)
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(text = "Tips to keep you on track", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Normal)
-            Spacer(modifier = Modifier.height(16.dp))
-            TipsSection(tips = tips)
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        AppHeader(title = "Insights", navController = navController)
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(text = "This week's Insights", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Normal)
+        Spacer(modifier = Modifier.height(20.dp))
+        InsightsChart(segments = segments)
+        Spacer(modifier = Modifier.height(32.dp))
+        SummaryCard(completedHours = completedHours, completedTasks = totalTasks)
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(text = "Tips to keep you on track", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Normal)
+        Spacer(modifier = Modifier.height(16.dp))
+        TipsSection(tips = tips)
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

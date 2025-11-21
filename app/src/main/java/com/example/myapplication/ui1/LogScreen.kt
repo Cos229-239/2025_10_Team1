@@ -1,6 +1,5 @@
 package com.example.myapplication.ui1
 
-
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -19,21 +18,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.myapplication.R
+import com.example.myapplication.Screen
+// FIX 1: Import the shared DropdownItem from SharedUI.kt
+import com.example.myapplication.ui1.DropdownItem
 
-
+// Data classes
 data class RecentLog(val title: String, val color: Color)
-data class DropdownItem(val text: String, val backgroundColor: Color, val textColor: Color)
 
+// FIX 2: The local definition of DropdownItem has been removed from here.
+// data class DropdownItem(...) <-- THIS IS NOW GONE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogScreen(userName: String, modifier: Modifier = Modifier) {
+fun LogScreen(navController: NavController, userName: String, modifier: Modifier = Modifier) {
     val recentLogs = remember {
         mutableStateListOf(
             RecentLog("Too Tired", Color(0xFFEAFDE9)),
@@ -43,23 +49,28 @@ fun LogScreen(userName: String, modifier: Modifier = Modifier) {
     }
     var newLogText by remember { mutableStateOf("") }
     val logColors = listOf(
-        Color(0xFFEAFDE9), // Light Green
-        Color(0xFFFFEFCB), // Light Orange
-        Color(0xFFF8E8FF), // Light Purple
-        Color(0xFFE0F7FA), // Light Cyan
-        Color(0xFFFFEBEE)  // Light Pink
+        Color(0xFFEAFDE9), Color(0xFFFFEFCB), Color(0xFFF8E8FF),
+        Color(0xFFE0F7FA), Color(0xFFFFEBEE)
     )
 
-    Column(modifier = modifier.fillMaxSize()) {
-        LogTopAppBar()
+    val logGradient: Brush = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF5E3F89), // Lighter Purple
+            Color(0xFF2C7A7A)  // Lighter Teal/Cyan
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(logGradient)
+    ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(top = 80.dp, bottom = 16.dp), // Padding for the app bar
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Spacer(modifier = Modifier.height(16.dp))
                 LogInputSection(
                     userName = userName,
                     text = newLogText,
@@ -73,29 +84,39 @@ fun LogScreen(userName: String, modifier: Modifier = Modifier) {
                 )
             }
             item {
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Recent Logs",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                 )
             }
             items(recentLogs) { log ->
-                RecentLogItem(log = log)
+                RecentLogItem(log = log, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
         }
+
+        LogTopAppBar(navController = navController)
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LogTopAppBar() {
+fun LogTopAppBar(navController: NavController) {
     var menuExpanded by remember { mutableStateOf(false) }
+
+    // FIX 3: Use the simpler, shared DropdownItem(text, route)
     val menuItems = listOf(
-        DropdownItem("Focus", backgroundColor = Color(0xFFE8F5E9), textColor = Color(0xFF2E7D32)),
-        DropdownItem("Breakroom", backgroundColor = Color(0xFFE3F2FD), textColor = Color(0xFF1565C0)),
-        DropdownItem("Insights", backgroundColor = Color(0xFFFFF8E1), textColor = Color(0xFFF9A825)),
-        DropdownItem("Planner", backgroundColor = Color(0xFFF3E5F5), textColor = Color(0xFF6A1B9A)),
-        DropdownItem("Home", backgroundColor = Color(0xFFFFEBEE), textColor = Color(0xFFC62828)),
-        DropdownItem("Menu", backgroundColor = Color(0xFFECEFF1), textColor = Color(0xFF37474F))
+        DropdownItem("Focus", Screen.Focus.route), // Use the new Focus route
+        DropdownItem("Breakroom", Screen.Breakroom.route),
+        DropdownItem("Insights", Screen.Insights.route),
+        DropdownItem("Planner", Screen.Planner.route),
+        DropdownItem("Home", Screen.Home.route),
+        DropdownItem("Menu", Screen.Menu.route)
     )
 
     TopAppBar(
@@ -103,7 +124,8 @@ fun LogTopAppBar() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "My Log",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White
                 )
                 Icon(
                     painter = painterResource(id = R.drawable.tisense_icon_2),
@@ -119,7 +141,8 @@ fun LogTopAppBar() {
                     Icon(
                         imageVector = Icons.Filled.Menu,
                         contentDescription = "Menu",
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(28.dp),
+                        tint = Color.White
                     )
                 }
                 DropdownMenu(
@@ -127,19 +150,11 @@ fun LogTopAppBar() {
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     menuItems.forEach { item ->
+                        // The DropdownMenuItem now has a standard appearance
                         DropdownMenuItem(
-                            text = {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(50))
-                                        .background(item.backgroundColor)
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    Text(item.text, color = item.textColor)
-                                }
-                            },
+                            text = { Text(item.text) },
                             onClick = {
-                                Log.d("LogScreen", "${item.text} clicked")
+                                navController.navigate(item.route)
                                 menuExpanded = false
                             }
                         )
@@ -160,10 +175,11 @@ fun LogInputSection(
     onTextChange: (String) -> Unit,
     onLogSubmitted: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Text(
             text = "What's stopping you\nright now, $userName?",
             style = MaterialTheme.typography.headlineSmall,
+            color = Color.White,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         OutlinedTextField(
@@ -173,7 +189,16 @@ fun LogInputSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                cursorColor = Color.Black,
+                focusedBorderColor = Color.White,
+                unfocusedBorderColor = Color.LightGray,
+                focusedContainerColor = Color.White.copy(alpha = 0.8f),
+                unfocusedContainerColor = Color.White.copy(alpha = 0.8f)
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -189,15 +214,16 @@ fun LogInputSection(
     }
 }
 
-@Composable
-fun RecentLogItem(log: RecentLog) {
-    var isFlipped by remember { mutableStateOf(false) }
 
+@Composable
+fun RecentLogItem(log: RecentLog, modifier: Modifier = Modifier) {
+    var isFlipped by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
         animationSpec = tween(durationMillis = 600),
         label = "rotationAnimation"
     )
+    val density = LocalDensity.current
 
     fun getAiRecommendation(title: String): String {
         return when {
@@ -207,14 +233,13 @@ fun RecentLogItem(log: RecentLog) {
             else -> "A great first step is to take a deep breath. Stand up, stretch, and get a glass of water. A brief reset can do wonders for your focus and clarity."
         }
     }
-
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { isFlipped = !isFlipped }
             .graphicsLayer {
                 rotationY = rotation
-                cameraDistance = 8 * density
+                cameraDistance = 8 * density.density
             },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -255,9 +280,7 @@ fun CardBack(log: RecentLog, recommendation: String) {
         modifier = Modifier
             .fillMaxWidth()
             .background(log.color)
-            .graphicsLayer {
-                rotationY = 180f
-            }
+            .graphicsLayer { rotationY = 180f }
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
