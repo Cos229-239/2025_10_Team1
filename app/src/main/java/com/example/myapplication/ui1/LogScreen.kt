@@ -28,14 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
 import com.example.myapplication.Screen
-// FIX 1: Import the shared DropdownItem from SharedUI.kt
-import com.example.myapplication.ui1.DropdownItem
 
 // Data classes
 data class RecentLog(val title: String, val color: Color)
-
-// FIX 2: The local definition of DropdownItem has been removed from here.
-// data class DropdownItem(...) <-- THIS IS NOW GONE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,20 +49,26 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
     )
 
     val logGradient: Brush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF5E3F89), // Lighter Purple
-            Color(0xFF2C7A7A)  // Lighter Teal/Cyan
-        )
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
-    Box(
+    Scaffold(
+        topBar = {
+            TisenseHeader(
+                title = "My Log",
+                onMenuClick = { navController.navigate(Screen.Menu.route) }
+            )
+        },
+        containerColor = Color.Transparent,
         modifier = modifier
             .fillMaxSize()
             .background(logGradient)
-    ) {
+    ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 80.dp, bottom = 16.dp), // Padding for the app bar
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding), // Use padding from Scaffold
+            contentPadding = PaddingValues(bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -98,74 +99,7 @@ fun LogScreen(navController: NavController, userName: String, modifier: Modifier
                 RecentLogItem(log = log, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
         }
-
-        LogTopAppBar(navController = navController)
     }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LogTopAppBar(navController: NavController) {
-    var menuExpanded by remember { mutableStateOf(false) }
-
-    // FIX 3: Use the simpler, shared DropdownItem(text, route)
-    val menuItems = listOf(
-        DropdownItem("Focus", Screen.Focus.route), // Use the new Focus route
-        DropdownItem("Breakroom", Screen.Breakroom.route),
-        DropdownItem("Insights", Screen.Insights.route),
-        DropdownItem("Planner", Screen.Planner.route),
-        DropdownItem("Home", Screen.Home.route),
-        DropdownItem("Menu", Screen.Menu.route)
-    )
-
-    TopAppBar(
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "My Log",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.tisense_icon_2),
-                    contentDescription = "App Logo",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(54.dp)
-                )
-            }
-        },
-        actions = {
-            Box {
-                IconButton(onClick = { menuExpanded = true }) {
-                    Icon(
-                        imageVector = Icons.Filled.Menu,
-                        contentDescription = "Menu",
-                        modifier = Modifier.size(28.dp),
-                        tint = Color.White
-                    )
-                }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    menuItems.forEach { item ->
-                        // The DropdownMenuItem now has a standard appearance
-                        DropdownMenuItem(
-                            text = { Text(item.text) },
-                            onClick = {
-                                navController.navigate(item.route)
-                                menuExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
-        )
-    )
 }
 
 @Composable
@@ -213,7 +147,6 @@ fun LogInputSection(
         }
     }
 }
-
 
 @Composable
 fun RecentLogItem(log: RecentLog, modifier: Modifier = Modifier) {
