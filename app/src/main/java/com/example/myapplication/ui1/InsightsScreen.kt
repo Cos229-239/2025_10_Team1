@@ -51,6 +51,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.ChartSegment
 import com.example.myapplication.PlannerTask
 import com.example.myapplication.R
+import com.example.myapplication.Screen
 import com.example.myapplication.Tip
 
 
@@ -77,27 +78,23 @@ fun InsightsScreen(tasks: List<PlannerTask>, navController: NavController, modif
         colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
-    // FIX 1: Main container column for background and top-level layout
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(standardGradient) // Apply gradient to the whole screen
             .padding(WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues())
     ) {
-        // FIX 2: Move AppHeader out and give it specific padding
-        AppHeader(
+        TisenseHeader(
             title = "Insights",
-            navController = navController
+            onMenuClick = { navController.navigate(Screen.Menu.route) }
         )
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // FIX 3: Create a new Column for the scrollable and centered content
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(standardGradient) // Apply gradient to the content area
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 10.dp)
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "This week's Insights",
                 style = MaterialTheme.typography.headlineMedium,
@@ -251,4 +248,3 @@ fun TipCard(tip: Tip, onClick: () -> Unit) {
         }
     }
 }
-

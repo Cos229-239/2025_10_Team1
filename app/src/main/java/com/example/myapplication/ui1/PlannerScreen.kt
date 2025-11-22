@@ -19,13 +19,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -39,9 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,12 +45,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.myapplication.PlannerTask
-import com.example.myapplication.R
+import com.example.myapplication.Screen
 import com.example.myapplication.TaskPriority
 import com.example.myapplication.ui.theme.LightBlue
-import com.example.myapplication.ui.theme.LightGreen
-import com.example.myapplication.ui.theme.LightOrange
-import com.example.myapplication.ui.theme.LightPurple
 import com.example.myapplication.ui.theme.LightYellow
 
 // --- PLANNER SCREEN ---
@@ -68,26 +61,22 @@ fun PlannerScreen(
     var showDialog by remember { mutableStateOf(false) }
     var selectedDay by remember { mutableStateOf("Tue") }
 
-    // FIX 1: Define the standard purple-to-teal gradient.
-    val standardGradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
-    )
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        // Make Scaffold transparent to allow the gradient to fill the screen
         containerColor = Color.Transparent
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(standardGradient) // Apply the standard gradient
+                .background(Color(0xFF5E3F89)) // Apply solid purple
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
         ) {
-            PlannerHeader()
+            TisenseHeader(
+                title = "Daily Planner",
+                onMenuClick = { navController.navigate(Screen.Menu.route) }
+            )
             Spacer(modifier = Modifier.height(24.dp))
-            // FIX 2: Change text color to White for readability.
             Text(
                 text = "What are we doing today, Name?",
                 style = MaterialTheme.typography.headlineSmall,
@@ -116,7 +105,6 @@ fun PlannerScreen(
                             onCompletedChange = { isCompleted ->
                                 onTaskCompletedChange(task, isCompleted)
                             },
-                            // The pastel task colors work well on the dark background
                             color = taskColors[index % taskColors.size]
                         )
                     }
@@ -139,38 +127,6 @@ fun PlannerScreen(
     }
 }
 
-
-@Composable
-fun PlannerHeader() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // FIX 3: Update header text and icon colors
-            Text(
-                "Daily Planner",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.tisense_icon_2),
-                contentDescription = "Logo",
-                modifier = Modifier.size(92.dp),
-                tint = Color.Unspecified
-            )
-        }
-        IconButton(onClick = { /* Handle menu click */ }) {
-            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
-        }
-    }
-}
-
 @Composable
 fun DaySelector(selectedDay: String, onDaySelected: (String) -> Unit) {
     val days = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
@@ -179,7 +135,6 @@ fun DaySelector(selectedDay: String, onDaySelected: (String) -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         days.forEach { day ->
-            // FIX 4: Update DaySelector for dark theme
             val isSelected = day == selectedDay
             Box(
                 modifier = Modifier
@@ -202,7 +157,7 @@ fun DaySelector(selectedDay: String, onDaySelected: (String) -> Unit) {
 }
 
 // These pastel colors provide good contrast on the dark background
-val taskColors = listOf(LightBlue, LightYellow, LightPurple, LightOrange)
+val taskColors = listOf(LightBlue, LightYellow, com.example.myapplication.ui.theme.LightPurple, com.example.myapplication.ui.theme.LightOrange)
 
 @Composable
 fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit, color: Color) {
@@ -223,12 +178,12 @@ fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit, color: Col
                     text = task.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray // Keep text dark on pastel background
+                    color = Color.DarkGray
                 )
                 Text(
                     text = task.time,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray.copy(alpha = 0.7f) // Keep text dark on pastel background
+                    color = Color.DarkGray.copy(alpha = 0.7f)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -242,7 +197,6 @@ fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit, color: Col
 
 @Composable
 fun AddTaskButton(onClick: () -> Unit) {
-    // FIX 5: Update Add Task button for dark theme
     Button(
         onClick = onClick,
         modifier = Modifier
@@ -267,7 +221,6 @@ fun AddTaskDialog(
     var title by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(TaskPriority.MEDIUM) }
 
-    // Dialog styling is standard and doesn't need to be themed with the gradient.
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -306,4 +259,3 @@ fun AddTaskDialog(
         }
     }
 }
-

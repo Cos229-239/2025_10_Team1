@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.Screen
 
 @Composable
 fun FocusSessionScreen(
@@ -41,10 +42,9 @@ fun FocusSessionScreen(
 
     Scaffold(
         topBar = {
-            // The shared AppHeader is already transparent and works well.
-            AppHeader(
-                title = "Focus Session",
-                navController = navController
+            TisenseHeader(
+                title = "Focus",
+                onMenuClick = { navController.navigate(Screen.Menu.route) }
             )
         },
         // Make the Scaffold background transparent to show the Column's gradient.
@@ -254,5 +254,3 @@ private fun GhostButton(text: String, modifier: Modifier = Modifier, onClick: ((
         Text(text, fontSize = 18.sp, color = Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center)
     }
 }
-
-
