@@ -10,19 +10,15 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items // FIX: Added missing import
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +27,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -51,6 +48,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.ChartSegment
 import com.example.myapplication.PlannerTask
 import com.example.myapplication.R
+import com.example.myapplication.Screen
 import com.example.myapplication.Tip
 
 
@@ -77,27 +75,26 @@ fun InsightsScreen(tasks: List<PlannerTask>, navController: NavController, modif
         colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
-    // FIX 1: Main container column for background and top-level layout
-    Column(
+    Scaffold(
+        topBar = {
+            TisenseHeader(
+                title = "Insights",
+                onMenuClick = { navController.navigate(Screen.Menu.route) }
+            )
+        },
+        containerColor = Color.Transparent,
         modifier = modifier
             .fillMaxSize()
-            .background(standardGradient) // Apply gradient to the whole screen
-            .padding(WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues())
-    ) {
-        // FIX 2: Move AppHeader out and give it specific padding
-        AppHeader(
-            title = "Insights",
-            navController = navController
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // FIX 3: Create a new Column for the scrollable and centered content
+            .background(standardGradient)
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding) // Use padding from Scaffold
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "This week's Insights",
                 style = MaterialTheme.typography.headlineMedium,
@@ -190,7 +187,7 @@ fun SummaryCard(completedHours: Int, completedTasks: Int) {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color(0xFF33691E))) { append("Great Job!!") }
                 append(" You completed ")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("$completedHours hours") }
-                append(" of focus this week and completed ")
+                append(" of focus this week and completed ") // FIX: Closed unterminated string
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("$completedTasks tasks.") }
             },
             modifier = Modifier.padding(16.dp),
@@ -207,10 +204,11 @@ fun TipsSection(tips: List<Tip>) {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
-        items(tips.size) { index ->
+        // FIX: Switched to the more robust `items` list extension
+        items(items = tips) { tip ->
             TipCard(
-                tip = tips[index],
-                onClick = { uriHandler.openUri(tips[index].url) }
+                tip = tip,
+                onClick = { uriHandler.openUri(tip.url) }
             )
         }
     }
@@ -251,4 +249,3 @@ fun TipCard(tip: Tip, onClick: () -> Unit) {
         }
     }
 }
-

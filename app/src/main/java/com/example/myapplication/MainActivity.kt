@@ -47,12 +47,14 @@ import com.example.myapplication.ui1.EditProfileScreen
 import com.example.myapplication.ui1.HomeScreen
 import com.example.myapplication.ui1.InsightsScreen
 import com.example.myapplication.ui1.LogScreen
+import com.example.myapplication.ui1.LoginScreen
 import com.example.myapplication.ui1.MenuScreen
 import com.example.myapplication.ui1.MusicScreen
 import com.example.myapplication.ui1.PlannerScreen
 import com.example.myapplication.ui1.SettingsScreen
 import com.example.myapplication.ui1.StretchDetailScreen
 import com.example.myapplication.ui1.StretchExerciseScreen
+import com.example.myapplication.ui1.WelcomeScreen
 import com.example.myapplication.ui1.theme.MyApplicationTheme
 
 // --- Data Classes & Enums ---
@@ -74,6 +76,8 @@ data class BottomNavItem(val label: String, val icon: Any, val route: String)
 data class MenuItem(val title: String, val color: Color, val route: String)
 
 sealed class Screen(val route: String) {
+    object Welcome : Screen("welcome")
+    object Login : Screen("login")
     object Home : Screen("home")
     object Breakroom : Screen("breakroom")
     object BreathingExercise : Screen("breathing_exercise")
@@ -128,19 +132,16 @@ fun NavigationGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = Screen.Welcome.route,
         modifier = modifier
     ) {
+        composable(Screen.Welcome.route) { WelcomeScreen(navController) }
+        composable(Screen.Login.route) { LoginScreen(navController) }
         composable(Screen.Home.route) { HomeScreen(navController = navController) }
         composable(Screen.Breakroom.route) { BreakroomScreen(navController = navController) }
         composable(Screen.BreathingExercise.route) { BreathingExerciseScreen(navController = navController) }
         composable(Screen.Stretch.route) { StretchExerciseScreen(navController = navController, stretches = stretchDataMap.values.toList()) }
-
-        // --- THIS IS THE FIX ---
-        // The LogScreen only needs a userName, not a NavController.
-        composable(Screen.Log.route) { LogScreen(userName = "Jonathan") }
-        // --- END OF FIX ---
-
+        composable(Screen.Log.route) { LogScreen(navController = navController, userName = "Jonathan") }
         composable(Screen.Planner.route) {
             PlannerScreen(
                 navController = navController,
@@ -202,8 +203,21 @@ fun MainApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // Show bottom bar only on main screens, not on welcome/login
+    val showBottomBar = currentRoute in listOf(
+        Screen.Home.route,
+        Screen.Log.route,
+        Screen.Planner.route,
+        Screen.Insights.route,
+        Screen.Account.route
+    )
+
     Scaffold(
-        bottomBar = { AppBottomNavigationBar(navController = navController, currentRoute = currentRoute) }
+        bottomBar = {
+            if (showBottomBar) {
+                AppBottomNavigationBar(navController = navController, currentRoute = currentRoute)
+            }
+        }
     ) { innerPadding ->
         NavigationGraph(
             navController = navController,
@@ -220,7 +234,6 @@ fun MainApp() {
                     )
                 )
             },
-
             onTaskCompletedChange = { task, isCompleted ->
                 val index = tasks.indexOf(task)
                 if (index != -1) {
