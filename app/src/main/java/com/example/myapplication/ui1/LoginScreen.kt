@@ -42,20 +42,20 @@ import com.example.myapplication.R
 import com.example.myapplication.Screen
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController) { // FIX: Renamed function to match the file name
     var email by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()) // Make screen scrollable on small devices
             .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(80.dp))
 
-
+        // --- Logo and Title ---
         Text(
             text = "TiSense",
             fontSize = 20.sp,
@@ -64,12 +64,12 @@ fun LoginScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Image(
-
+            // NOTE: Using the existing icon resource which fits well.
             painter = painterResource(id = R.drawable.tisense_icon_2),
             contentDescription = "TiSense Logo",
             modifier = Modifier
-                .size(120.dp)
-                .clip(RoundedCornerShape(92.dp))
+                .size(100.dp)
+                .clip(RoundedCornerShape(22.dp))
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(Color(0xFF8A63D2), Color(0xFFC8AFFF))

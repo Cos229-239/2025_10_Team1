@@ -119,4 +119,3 @@ fun WelcomeScreen(navController: NavController) {
 fun WelcomeScreenPreview() {
     WelcomeScreen(navController = rememberNavController())
 }
-
