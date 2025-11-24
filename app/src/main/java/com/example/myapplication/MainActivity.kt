@@ -22,6 +22,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -50,17 +53,29 @@ import com.example.myapplication.ui1.LogScreen
 import com.example.myapplication.ui1.LoginScreen
 import com.example.myapplication.ui1.MenuScreen
 import com.example.myapplication.ui1.MusicScreen
+import com.example.myapplication.ui1.PermissionsScreen
 import com.example.myapplication.ui1.PlannerScreen
 import com.example.myapplication.ui1.SettingsScreen
 import com.example.myapplication.ui1.StretchDetailScreen
 import com.example.myapplication.ui1.StretchExerciseScreen
 import com.example.myapplication.ui1.WelcomeScreen
 import com.example.myapplication.ui1.theme.MyApplicationTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 // --- Data Classes & Enums ---
 
 enum class TaskPriority {
     HIGH, MEDIUM, LOW
+}
+
+class ThemeViewModel : ViewModel() {
+    private val _isDarkTheme = MutableStateFlow(false)
+    val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
+
+    fun setDarkTheme(isDark: Boolean) {
+        _isDarkTheme.value = isDark
+    }
 }
 
 data class PlannerTask(
@@ -90,6 +105,7 @@ sealed class Screen(val route: String) {
     object EditProfile : Screen("edit_profile")
     object Menu : Screen("menu")
     object Music : Screen("music")
+    object Permissions : Screen("permissions") // Added permissions screen
 
     object StretchDetail : Screen("stretch_detail/{name}") {
         fun createRoute(name: String) = "stretch_detail/$name"
@@ -112,8 +128,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
-                MainApp()
+            val themeViewModel: ThemeViewModel = viewModel()
+            val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+            MyApplicationTheme(darkTheme = isDarkTheme) {
+                MainApp(themeViewModel = themeViewModel)
             }
         }
     }
@@ -128,7 +146,8 @@ fun NavigationGraph(
     onTaskCompletedChange: (PlannerTask, Boolean) -> Unit,
     stretchDataMap: Map<String, Stretch>,
     selectedMusicUri: Uri?,
-    onMusicSelect: (Uri) -> Unit
+    onMusicSelect: (Uri) -> Unit,
+    themeViewModel: ThemeViewModel
 ) {
     NavHost(
         navController = navController,
@@ -152,7 +171,8 @@ fun NavigationGraph(
         }
         composable(Screen.Insights.route) { InsightsScreen(tasks = tasks, navController = navController) }
         composable(Screen.Account.route) { AccountScreen(navController = navController) }
-        composable(Screen.Settings.route) { SettingsScreen(navController = navController) }
+        composable(Screen.Settings.route) { SettingsScreen(navController = navController, themeViewModel = themeViewModel) }
+        composable(Screen.Permissions.route) { PermissionsScreen(navController = navController) }
         composable(Screen.EditProfile.route) { EditProfileScreen(navController = navController) }
         composable(Screen.Menu.route) { MenuScreen(navController = navController) }
         composable(Screen.Music.route) {
@@ -176,7 +196,7 @@ fun NavigationGraph(
 
 
 @Composable
-fun MainApp() {
+fun MainApp(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     var selectedMusicUri by remember { mutableStateOf<Uri?>(null) }
     var uniqueIdCounter by remember { mutableStateOf(4L) }
@@ -242,7 +262,8 @@ fun MainApp() {
             },
             stretchDataMap = stretchDataMap,
             selectedMusicUri = selectedMusicUri,
-            onMusicSelect = { uri -> selectedMusicUri = uri }
+            onMusicSelect = { uri -> selectedMusicUri = uri },
+            themeViewModel = themeViewModel
         )
     }
 }

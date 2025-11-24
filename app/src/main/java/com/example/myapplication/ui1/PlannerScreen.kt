@@ -1,5 +1,11 @@
 package com.example.myapplication.ui1
 
+import android.Manifest
+import android.content.ContentValues
+import android.content.pm.PackageManager
+import android.provider.CalendarContract
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +40,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,21 +49,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.myapplication.PlannerTask
 import com.example.myapplication.R
+import com.example.myapplication.Screen
 import com.example.myapplication.TaskPriority
 import com.example.myapplication.ui.theme.LightBlue
 import com.example.myapplication.ui.theme.LightGreen
 import com.example.myapplication.ui.theme.LightOrange
 import com.example.myapplication.ui.theme.LightPurple
 import com.example.myapplication.ui.theme.LightYellow
+import java.util.Calendar
+import java.util.TimeZone
+
+// --- Data class for calendar events ---
+data class CalendarEvent(val title: String, val startTime: Long)
 
 // --- PLANNER SCREEN ---
 @Composable
@@ -67,27 +83,52 @@ fun PlannerScreen(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedDay by remember { mutableStateOf("Tue") }
+    var calendarEvents by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
+    val context = LocalContext.current
 
-    // FIX 1: Define the standard purple-to-teal gradient.
+    // --- CALENDAR PERMISSION & DATA LOGIC ---
+    val calendarPermissions = arrayOf(
+        Manifest.permission.READ_CALENDAR,
+        Manifest.permission.WRITE_CALENDAR
+    )
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            calendarEvents = getCalendarEvents(context)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val allPermissionsGranted = calendarPermissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+        if (allPermissionsGranted) {
+            calendarEvents = getCalendarEvents(context)
+        } else {
+            launcher.launch(calendarPermissions)
+        }
+    }
+
     val standardGradient = Brush.verticalGradient(
         colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        // Make Scaffold transparent to allow the gradient to fill the screen
         containerColor = Color.Transparent
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(standardGradient) // Apply the standard gradient
+                .background(standardGradient)
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
         ) {
-            PlannerHeader()
+            // FIX: Pass navigation action to the header
+            PlannerHeader(onMenuClick = { navController.navigate(Screen.Menu.route) })
             Spacer(modifier = Modifier.height(24.dp))
-            // FIX 2: Change text color to White for readability.
             Text(
                 text = "What are we doing today, Name?",
                 style = MaterialTheme.typography.headlineSmall,
@@ -98,30 +139,42 @@ fun PlannerScreen(
             DaySelector(selectedDay = selectedDay, onDaySelected = { selectedDay = it })
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (tasks.isEmpty()) {
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No tasks for today!", color = Color.White.copy(alpha = 0.8f))
-                }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                if (tasks.isNotEmpty()) {
                     itemsIndexed(tasks, key = { _, task -> task.id }) { index, task ->
                         TaskItem(
                             task = task,
                             onCompletedChange = { isCompleted ->
                                 onTaskCompletedChange(task, isCompleted)
                             },
-                            // The pastel task colors work well on the dark background
                             color = taskColors[index % taskColors.size]
                         )
                     }
+                } else {
+                    item {
+                        Text("No tasks for today!", color = Color.White.copy(alpha = 0.8f))
+                    }
+                }
+
+                if (calendarEvents.isNotEmpty()) {
+                    item { 
+                        Text(
+                            "From Your Calendar",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                        )
+                    }
+                    items(calendarEvents) { event ->
+                        CalendarEventItem(event)
+                    }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
             AddTaskButton(onClick = { showDialog = true })
             Spacer(modifier = Modifier.height(16.dp))
@@ -133,15 +186,90 @@ fun PlannerScreen(
             onDismiss = { showDialog = false },
             onConfirm = { title, priority ->
                 onAddTask(title, priority)
+                addEventToCalendar(context, title) // Add event to calendar
                 showDialog = false
             }
         )
     }
 }
 
+// --- CALENDAR INTEGRATION FUNCTIONS ---
+
+private fun getCalendarEvents(context: android.content.Context): List<CalendarEvent> {
+    val eventList = mutableListOf<CalendarEvent>()
+    val projection = arrayOf(CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART)
+    val calendar = Calendar.getInstance()
+    val startTime = calendar.timeInMillis
+    calendar.add(Calendar.DAY_OF_YEAR, 1)
+    val endTime = calendar.timeInMillis
+    val selection = "(${CalendarContract.Events.DTSTART} >= ?) AND (${CalendarContract.Events.DTEND} <= ?)"
+    val selectionArgs = arrayOf(startTime.toString(), endTime.toString())
+
+    try {
+        context.contentResolver.query(
+            CalendarContract.Events.CONTENT_URI, projection, selection, selectionArgs, null
+        )?.use { cursor ->
+            val titleColumn = cursor.getColumnIndexOrThrow(CalendarContract.Events.TITLE)
+            val startTimeColumn = cursor.getColumnIndexOrThrow(CalendarContract.Events.DTSTART)
+            while (cursor.moveToNext()) {
+                val title = cursor.getString(titleColumn)
+                val start = cursor.getLong(startTimeColumn)
+                eventList.add(CalendarEvent(title, start))
+            }
+        }
+    } catch (e: SecurityException) {
+        // Handle the case where the user revokes permission
+    }
+    return eventList
+}
+
+private fun addEventToCalendar(context: android.content.Context, title: String) {
+    val calID: Long = getPrimaryCalendarId(context) ?: return
+
+    val startMillis: Long = Calendar.getInstance().run {
+        timeInMillis
+    }
+    val endMillis: Long = Calendar.getInstance().run {
+        add(Calendar.HOUR, 1)
+        timeInMillis
+    }
+
+    val values = ContentValues().apply {
+        put(CalendarContract.Events.DTSTART, startMillis)
+        put(CalendarContract.Events.DTEND, endMillis)
+        put(CalendarContract.Events.TITLE, title)
+        put(CalendarContract.Events.CALENDAR_ID, calID)
+        put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
+    }
+
+    try {
+        context.contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
+    } catch (e: SecurityException) {
+        // Handle case where user revokes permission
+    }
+}
+
+private fun getPrimaryCalendarId(context: android.content.Context): Long? {
+    val projection = arrayOf(CalendarContract.Calendars._ID)
+    val selection = "(${CalendarContract.Calendars.IS_PRIMARY} = ?)"
+    val selectionArgs = arrayOf("1")
+    try {
+        context.contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI, projection, selection, selectionArgs, null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                return cursor.getLong(0)
+            }
+        }
+    } catch (e: SecurityException) {
+        // Handle permission issue
+    }
+    return null
+}
+
 
 @Composable
-fun PlannerHeader() {
+fun PlannerHeader(onMenuClick: () -> Unit) { // FIX: Accept an onClick lambda
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -150,7 +278,6 @@ fun PlannerHeader() {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // FIX 3: Update header text and icon colors
             Text(
                 "Daily Planner",
                 style = MaterialTheme.typography.headlineLarge,
@@ -165,7 +292,8 @@ fun PlannerHeader() {
                 tint = Color.Unspecified
             )
         }
-        IconButton(onClick = { /* Handle menu click */ }) {
+        // FIX: Use the passed-in onClick action
+        IconButton(onClick = onMenuClick) {
             Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
         }
     }
@@ -179,7 +307,6 @@ fun DaySelector(selectedDay: String, onDaySelected: (String) -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         days.forEach { day ->
-            // FIX 4: Update DaySelector for dark theme
             val isSelected = day == selectedDay
             Box(
                 modifier = Modifier
@@ -201,7 +328,6 @@ fun DaySelector(selectedDay: String, onDaySelected: (String) -> Unit) {
     }
 }
 
-// These pastel colors provide good contrast on the dark background
 val taskColors = listOf(LightBlue, LightYellow, LightPurple, LightOrange)
 
 @Composable
@@ -223,12 +349,12 @@ fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit, color: Col
                     text = task.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray // Keep text dark on pastel background
+                    color = Color.DarkGray
                 )
                 Text(
                     text = task.time,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.DarkGray.copy(alpha = 0.7f) // Keep text dark on pastel background
+                    color = Color.DarkGray.copy(alpha = 0.7f)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -241,8 +367,28 @@ fun TaskItem(task: PlannerTask, onCompletedChange: (Boolean) -> Unit, color: Col
 }
 
 @Composable
+fun CalendarEventItem(event: CalendarEvent) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = LightGreen)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
+        ) {
+            Text(
+                text = event.title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.DarkGray
+            )
+        }
+    }
+}
+
+@Composable
 fun AddTaskButton(onClick: () -> Unit) {
-    // FIX 5: Update Add Task button for dark theme
     Button(
         onClick = onClick,
         modifier = Modifier
@@ -267,7 +413,6 @@ fun AddTaskDialog(
     var title by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(TaskPriority.MEDIUM) }
 
-    // Dialog styling is standard and doesn't need to be themed with the gradient.
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -306,4 +451,3 @@ fun AddTaskDialog(
         }
     }
 }
-

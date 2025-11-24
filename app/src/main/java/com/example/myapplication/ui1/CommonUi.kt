@@ -28,7 +28,7 @@ fun TisenseHeader(title: String, onMenuClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF5E3F89)) // Solid purple background
+            .background(Color.Transparent) // FIX: Made background transparent
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

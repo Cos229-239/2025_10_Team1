@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -62,17 +63,18 @@ import java.util.Locale
 
 @Composable
 fun HomeScreen(navController: NavController) {
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(standardGradient) // FIX: Applied standard gradient
             .verticalScroll(rememberScrollState()) // Makes the column scrollable
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // NOTE: The "item { }" wrappers have been removed.
-
         // --- Header ---
         Spacer(modifier = Modifier.height(16.dp))
         HomeHeader(onMenuClick = { navController.navigate(Screen.Menu.route) })
@@ -83,7 +85,7 @@ fun HomeScreen(navController: NavController) {
             text = "Welcome back, Name!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.DarkGray,
+            color = Color.White, // FIX: Text color for contrast
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(32.dp))
@@ -93,7 +95,7 @@ fun HomeScreen(navController: NavController) {
             text = "Current Insights",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color.Gray,
+            color = Color.White.copy(alpha = 0.8f), // FIX: Text color for contrast
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -109,7 +111,7 @@ fun HomeScreen(navController: NavController) {
             text = "Where would you like to go?",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color.Gray,
+            color = Color.White.copy(alpha = 0.8f), // FIX: Text color for contrast
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -136,7 +138,7 @@ fun HomeHeader(onMenuClick: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Home", fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Home", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color.White) // FIX: Text color
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Image(
@@ -145,13 +147,14 @@ fun HomeHeader(onMenuClick: () -> Unit) {
                     modifier = Modifier.size(92.dp)
                 )
             }
-            Text(text = currentDate, fontSize = 14.sp, color = Color.Gray)
+            Text(text = currentDate, fontSize = 14.sp, color = Color.White.copy(alpha = 0.7f)) // FIX: Text color
         }
         IconButton(onClick = onMenuClick) {
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = "Menu",
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp),
+                tint = Color.White // FIX: Icon color
             )
         }
     }
@@ -203,7 +206,7 @@ fun InsightsDonutChart() {
                             .background(color)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = reason, fontSize = 14.sp)
+                    Text(text = reason, fontSize = 14.sp, color = Color.White) // FIX: Text color
                 }
             }
         }
@@ -222,7 +225,8 @@ fun MotivationalMessage() {
             text = "Motivational Message :)",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+            color = Color.DarkGray // Keep dark text on light card
         )
     }
 }

@@ -3,7 +3,17 @@ package com.example.myapplication.ui1
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
@@ -12,9 +22,17 @@ import androidx.compose.material.icons.outlined.AccessibilityNew
 import androidx.compose.material.icons.outlined.Air
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,8 +44,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.myapplication.ui1.AppHeader
-
 import com.example.myapplication.Screen
 import kotlinx.coroutines.delay
 
@@ -49,37 +65,49 @@ fun BreakroomScreen(navController: NavController, modifier: Modifier = Modifier)
         }
     }
 
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFFA4EBF3), Color(0xFFD4F1F4))
+    val standardGradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF5E3F89), Color(0xFF2C7A7A))
     )
 
-    Column(
+    Scaffold(
+        topBar = {
+            TisenseHeader(
+                title = "Breakroom",
+                onMenuClick = { navController.navigate(Screen.Menu.route) }
+            )
+        },
+        containerColor = Color.Transparent,
         modifier = modifier
             .fillMaxSize()
-            .background(gradient)
-            .padding(WindowInsets.systemBars.asPaddingValues())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        AppHeader(title = "Breakroom", navController = navController)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Let's take a break, Name.",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier.align(Alignment.Start)
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        BreakTimer(
-            remainingTimeSeconds = remainingTimeSeconds,
-            isRunning = isRunning,
-            onToggle = { isRunning = !isRunning }
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        BreathingGuide()
-        Spacer(modifier = Modifier.weight(1f))
-        BreakActivities(navController = navController)
-        Spacer(modifier = Modifier.height(32.dp))
+            .background(standardGradient)
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Let's take a break, Name.",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.align(Alignment.Start),
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            BreakTimer(
+                remainingTimeSeconds = remainingTimeSeconds,
+                isRunning = isRunning,
+                onToggle = { isRunning = !isRunning }
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            BreathingGuide()
+            Spacer(modifier = Modifier.weight(1f))
+            BreakActivities(navController = navController)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
@@ -103,7 +131,7 @@ fun BreakTimer(
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
-                color = Color.White.copy(alpha = 0.8f),
+                color = Color.White.copy(alpha = 0.3f),
                 style = Stroke(width = 15.dp.toPx())
             )
         }
@@ -112,12 +140,14 @@ fun BreakTimer(
                 text = timeString,
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Bold,
-                fontSize = 60.sp
+                fontSize = 60.sp,
+                color = Color.White
             )
             Icon(
                 imageVector = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = if (isRunning) "Pause Timer" else "Start Timer",
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(40.dp),
+                tint = Color.White
             )
         }
     }
@@ -130,13 +160,14 @@ fun BreathingGuide() {
             imageVector = Icons.Outlined.Air,
             contentDescription = "Breathe Icon",
             modifier = Modifier.size(48.dp),
-            tint = Color.DarkGray
+            tint = Color.White.copy(alpha = 0.8f)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = "Inhale",
             style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Normal,
+            color = Color.White.copy(alpha = 0.8f)
         )
     }
 }
@@ -158,7 +189,7 @@ fun BreakActivities(navController: NavController) {
                 color = Color(0xFFFFF9C4),
                 modifier = Modifier
                     .weight(1f)
-                        .clickable { navController.navigate(Screen.BreathingExercise.route) }
+                    .clickable { navController.navigate(Screen.BreathingExercise.route) }
 
             )
             ActivityButton(
@@ -170,7 +201,6 @@ fun BreakActivities(navController: NavController) {
                     .clickable { navController.navigate(Screen.Stretch.route) }
             )
         }
-        // This button now navigates to the music screen
         ActivityButton(
             text = "Play Music",
             icon = Icons.Outlined.MusicNote,
@@ -196,7 +226,7 @@ fun ActivityButton(text: String, icon: ImageVector, color: Color, modifier: Modi
         ) {
             Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = text, fontWeight = FontWeight.Bold)
+            Text(text = text, fontWeight = FontWeight.Bold, color = Color.DarkGray)
         }
     }
 }

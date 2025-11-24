@@ -1,5 +1,13 @@
 package com.example.myapplication.ui1
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,6 +35,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.NightsStay
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,20 +54,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.myapplication.R
 import com.example.myapplication.Screen
-import com.example.myapplication.ui1.AppHeader
-
+import com.example.myapplication.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController) {
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var darkModeEnabled by remember { mutableStateOf(false) }
+fun SettingsScreen(navController: NavController, themeViewModel: ThemeViewModel) {
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+    val context = LocalContext.current
+
+    var notificationsEnabled by remember {
+        mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled())
+    }
 
     Column(
         modifier = Modifier
@@ -85,8 +101,8 @@ fun SettingsScreen(navController: NavController) {
             title = "Dark Mode",
             icon = Icons.Outlined.NightsStay,
             iconBgColor = Color.DarkGray,
-            checked = darkModeEnabled,
-            onCheckedChange = { darkModeEnabled = it }
+            checked = isDarkTheme,
+            onCheckedChange = { themeViewModel.setDarkTheme(it) }
         )
 
         SettingsGroupHeader("Profile")
@@ -103,13 +119,33 @@ fun SettingsScreen(navController: NavController) {
             onClick = { navController.navigate(Screen.EditProfile.route) }
         )
 
+        SettingsGroupHeader("Permissions")
+        SettingsItem(
+            title = "App Permissions",
+            icon = Icons.Outlined.Security,
+            iconBgColor = Color(0xFFD43A3A),
+            onClick = { navController.navigate(Screen.Permissions.route) }
+        )
+
         SettingsGroupHeader("Notifications")
         SettingSwitchItem(
             title = "Notifications",
             icon = Icons.Filled.Notifications,
             iconBgColor = Color(0xFF66BB6A),
             checked = notificationsEnabled,
-            onCheckedChange = { notificationsEnabled = it }
+            onCheckedChange = {
+                val intent = Intent().apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    } else {
+                        action = "android.settings.APP_NOTIFICATION_SETTINGS"
+                        putExtra("app_package", context.packageName)
+                        putExtra("app_uid", context.applicationInfo.uid)
+                    }
+                }
+                context.startActivity(intent)
+            }
         )
 
         SettingsGroupHeader("Regional")
@@ -117,7 +153,11 @@ fun SettingsScreen(navController: NavController) {
             title = "Language",
             icon = Icons.Outlined.Translate,
             iconBgColor = Color(0xFF7E57C2),
-            onClick = { navController.navigate(Screen.EditProfile.route) }
+            onClick = { 
+                val intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
+                intent.data = Uri.fromParts("package", context.packageName, null)
+                context.startActivity(intent)
+            }
         )
 
         SettingsItem(
@@ -125,7 +165,7 @@ fun SettingsScreen(navController: NavController) {
             icon = Icons.AutoMirrored.Filled.Logout,
             iconBgColor = Color(0xFFEF5350),
             onClick = {
-                navController.navigate(Screen.Planner.route) {
+                navController.navigate(Screen.Login.route) {
                     popUpTo(navController.graph.id) {
                         inclusive = true
                     }
@@ -145,6 +185,96 @@ fun SettingsScreen(navController: NavController) {
                 color = Color.Gray
             )
         }
+    }
+}
+
+@Composable
+fun PermissionsScreen(navController: NavController) {
+    val context = LocalContext.current
+
+    var calendarPermissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_CALENDAR
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            calendarPermissionGranted = isGranted
+            if (!isGranted) {
+            }
+        }
+    )
+
+    var audioPermissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_MEDIA_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            audioPermissionGranted = isGranted
+        }
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(WindowInsets.systemBars.asPaddingValues())
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = "App Permissions",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
+        )
+
+        SettingsGroupHeader("Critical Permissions")
+        SettingSwitchItem(
+            title = "Calendar Access",
+            icon = Icons.Outlined.Person,
+            iconBgColor = Color(0xFF42A5F5),
+            checked = calendarPermissionGranted,
+            onCheckedChange = {
+                if (it) {
+                    calendarPermissionLauncher.launch(Manifest.permission.READ_CALENDAR)
+                } else {
+                    context.startActivity(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                    )
+                }
+            }
+        )
+        SettingSwitchItem(
+            title = "Music & Audio",
+            icon = Icons.Outlined.Lock,
+            iconBgColor = Color(0xFFFFA726),
+            checked = audioPermissionGranted,
+            onCheckedChange = {
+                if (it) {
+                    audioPermissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
+                } else {
+                    context.startActivity(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                    )
+                }
+            }
+        )
     }
 }
 
@@ -236,7 +366,6 @@ fun SettingsItem(
         )
     }
 }
-
 
 @Composable
 fun SettingSwitchItem(
